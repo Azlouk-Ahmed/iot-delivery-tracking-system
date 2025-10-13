@@ -221,7 +221,7 @@ router.get(
 // ==================== TOKEN MANAGEMENT ====================
 
 // Refresh access token
-router.post("/refresh", async (req, res) => {
+router.get("/refresh", async (req, res) => {
   try {
     const refreshToken = req.cookies?.refreshToken || req.body.refreshToken;
 
@@ -261,6 +261,7 @@ router.post("/refresh", async (req, res) => {
     res.status(200).json({
       success: true,
       accessToken: newAccessToken,
+      user: user.getPublicProfile()
     });
   } catch (error) {
     return res.status(403).json({

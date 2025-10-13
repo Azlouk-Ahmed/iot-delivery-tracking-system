@@ -1,5 +1,6 @@
 import React from "react";
 import { useRoutes } from "react-router-dom";
+import RequireAuth from "@/components/base/RequireAuth";
 
 const Home = React.lazy(() => import("../pages/Home"));
 const Login = React.lazy(() => import("../pages/Login"));
@@ -9,20 +10,25 @@ const MainLayout = React.lazy(() => import("../layouts/MainLayout"));
 const Router = () => {
   const routes = [
     {
-      path: "/",
-      element: (
-        <React.Suspense fallback={<div>Loading...</div>}>
-          <MainLayout />
-        </React.Suspense>
-      ),
+      element: <RequireAuth />,
       children: [
         {
           path: "/",
           element: (
             <React.Suspense fallback={<div>Loading...</div>}>
-              <Home />
+              <MainLayout />
             </React.Suspense>
           ),
+          children: [
+            {
+              path: "/",
+              element: (
+                <React.Suspense fallback={<div>Loading...</div>}>
+                  <Home />
+                </React.Suspense>
+              ),
+            },
+          ],
         },
       ],
     },
