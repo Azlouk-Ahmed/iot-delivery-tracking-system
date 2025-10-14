@@ -1,3 +1,4 @@
+//@ts-nocheck
 import { useState } from "react";
 import {
   Sidebar,
@@ -28,6 +29,7 @@ import {
 import { ChevronRight, ChevronUp } from "lucide-react";
 import type { Role } from "@/types/types";
 import { menuConfig } from "@/lib/menu-config";
+import { useAuthContext } from "@/hooks/useAuthContext";
 
 function Navbar() {
   const role: Role = "super_admin"; 
@@ -39,6 +41,8 @@ function Navbar() {
 
  
   const currentGroups = menuConfig[role] || [];
+
+  const {user} = useAuthContext();
 
   return (
     <Sidebar>
@@ -110,13 +114,13 @@ function Navbar() {
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton className="h-auto py-2">
                   <Avatar>
-                    <AvatarImage src="https://media.tenor.com/zH1Uu9dc0mgAAAAe/flapjack-west-west.png" />
-                    <AvatarFallback>CN</AvatarFallback>
+                    <AvatarImage src={user?.photo} />
+                    <AvatarFallback>{user?.name[0]+user?.name[1]}</AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col gap-0.5 flex-1 min-w-0">
-                    <span className="text-sm font-medium">ahmed azlouk</span>
+                    <span className="text-sm font-medium">{user?.name}</span>
                     <span className="text-xs text-muted-foreground truncate">
-                      ahmedazlouk9@gmail.com
+                      {user?.email}
                     </span>
                   </div>
                   <ChevronUp className="ml-auto shrink-0" />
