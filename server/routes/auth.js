@@ -8,6 +8,8 @@ const {
   validatePasswordReset,
 } = require("../middlewares/validations");
 const authController = require("../controllers/auth");
+const authorizeRoles = require("../middlewares/verifyRoles");
+const ALLOWED_ROLES = require("../config/roles-list");
 require("dotenv").config();
 
 const router = express.Router();
@@ -38,7 +40,7 @@ router.get("/refresh", authController.refreshAccessToken);
 
 router.get("/redirect", authenticateToken, authController.redirect);
 
-router.get("/me", authenticateToken, authController.getMe);
+router.get("/me", authenticateToken, authorizeRoles([ALLOWED_ROLES.USER]), authController.getMe);
 
 router.post("/logout", authController.logout);
 

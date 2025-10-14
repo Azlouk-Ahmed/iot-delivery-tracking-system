@@ -56,6 +56,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    role: {
+      type: String,
+      enum: ['super_admin', 'admin', 'driver', 'user'],
+      default: 'user',
+    },
     resetPasswordExpires: {
       type: Date,
       default: null,
@@ -125,6 +130,7 @@ userSchema.methods.getPublicProfile = function () {
     email: this.email,
     name: this.name,
     photo: this.photo,
+    role: this.role,
     authMethod: this.authMethod,
     isEmailVerified: this.isEmailVerified,
     createdAt: this.createdAt,
