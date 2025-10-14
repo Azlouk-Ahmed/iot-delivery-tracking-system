@@ -22,8 +22,8 @@ const useAxiosPrivate = () => {
             response => response,
             async (error) => {
                 const prevRequest = error?.config;
-                // Check for 401 (Unauthorized) not 403
                 if (error?.response?.status === 401 && !prevRequest?.sent) {
+                    console.log("Access token expired. Attempting to refresh... ===========================");
                     prevRequest.sent = true;
                     try {
                         const newAccessToken = await refresh();

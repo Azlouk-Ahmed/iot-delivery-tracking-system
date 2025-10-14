@@ -6,7 +6,7 @@ const useRefreshToken = () => {
   const { dispatch } = useAuthContext();
 
   const refresh = useCallback(async () => {
-    const response = await axiosPublic.get("/refresh", {
+    const response = await axiosPublic.get("/auth/refresh", {
       withCredentials: true,
     });
     
