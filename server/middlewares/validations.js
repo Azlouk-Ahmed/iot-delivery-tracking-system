@@ -1,20 +1,18 @@
 const validator = require("validator");
 
-/**
- * Validate signup request
- */
+
 const validateSignup = (req, res, next) => {
   const { email, password, name } = req.body;
   const errors = [];
 
-  // Validate email
+  
   if (!email) {
     errors.push("Email is required");
   } else if (!validator.isEmail(email)) {
     errors.push("Invalid email format");
   }
 
-  // Validate password
+  
   if (!password) {
     errors.push("Password is required");
   } else if (password.length < 6) {
@@ -23,7 +21,7 @@ const validateSignup = (req, res, next) => {
     errors.push("Password must be less than 128 characters");
   }
 
-  // Validate name
+  
   if (!name) {
     errors.push("Name is required");
   } else if (name.trim().length < 2) {
@@ -43,21 +41,19 @@ const validateSignup = (req, res, next) => {
   next();
 };
 
-/**
- * Validate login request
- */
+
 const validateLogin = (req, res, next) => {
   const { email, password } = req.body;
   const errors = [];
 
-  // Validate email
+  
   if (!email) {
     errors.push("Email is required");
   } else if (!validator.isEmail(email)) {
     errors.push("Invalid email format");
   }
 
-  // Validate password
+  
   if (!password) {
     errors.push("Password is required");
   }
@@ -73,9 +69,7 @@ const validateLogin = (req, res, next) => {
   next();
 };
 
-/**
- * Validate email for forgot password
- */
+
 const validateEmail = (req, res, next) => {
   const { email } = req.body;
   const errors = [];
@@ -97,9 +91,7 @@ const validateEmail = (req, res, next) => {
   next();
 };
 
-/**
- * Validate password reset request
- */
+
 const validatePasswordReset = (req, res, next) => {
   const { token, newPassword } = req.body;
   const errors = [];
@@ -127,9 +119,7 @@ const validatePasswordReset = (req, res, next) => {
   next();
 };
 
-/**
- * Sanitize user input to prevent XSS
- */
+
 const sanitizeInput = (req, res, next) => {
   if (req.body) {
     Object.keys(req.body).forEach((key) => {

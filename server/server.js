@@ -6,40 +6,33 @@ const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 require("dotenv").config();
 
-
 const passportSetup = require("./config/google-auth-config");
 const passport = require("passport");
 const authRouter = require("./routes/auth");
 
 const app = express();
 
-
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, 
-  max: 100, 
-  message: "Too many requests from this IP, please try again later.",
-});
-app.use("/auth", limiter);
-
+// const limiter = rateLimit({
+//   windowMs: 15 * 60 * 1000,
+//   max: 100,
+//   message: "Too many requests from this IP, please try again later.",
+// });
+// app.use("/auth", limiter);
 
 app.use(
   cors({
     origin: process.env.CLIENT_URL,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    credentials: true, 
+    credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
-
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
-app.use(cookieParser()); 
-
+app.use(cookieParser());
 
 app.use(passport.initialize());
-
-
 
 app.get("/health", (req, res) => {
   res.status(200).json({
@@ -49,9 +42,7 @@ app.get("/health", (req, res) => {
   });
 });
 
-
 app.use("/auth", authRouter);
-
 
 app.use((req, res) => {
   res.status(404).json({
@@ -59,9 +50,6 @@ app.use((req, res) => {
     message: "Route not found",
   });
 });
-
-
-
 
 app.use((err, req, res, next) => {
   console.error("Error:", err);
@@ -71,7 +59,6 @@ app.use((err, req, res, next) => {
     ...(process.env.NODE_ENV === "development" && { stack: err.stack }),
   });
 });
-
 
 const PORT = process.env.PORT || 5000;
 
@@ -88,7 +75,6 @@ mongoose
     console.error("❌ MongoDB connection error:", err);
     process.exit(1);
   });
-
 
 process.on("SIGTERM", () => {
   console.log("SIGTERM received, closing server...");

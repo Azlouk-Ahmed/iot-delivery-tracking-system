@@ -3,14 +3,12 @@ const bcrypt = require("bcryptjs");
 
 const userSchema = new mongoose.Schema(
   {
-    // Google OAuth fields
     googleId: {
       type: String,
-      sparse: true, // Allows null values, unique only when present
+      sparse: true,
       unique: true,
     },
-    
-    // Email/Password fields
+
     email: {
       type: String,
       required: true,
@@ -20,13 +18,12 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: function() {
+      required: function () {
         return !this.googleId;
       },
       minlength: 6,
     },
-    
-    // Common fields
+
     name: {
       type: String,
       required: true,
@@ -35,15 +32,13 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
-    
-    // Authentication method tracking
+
     authMethod: {
       type: String,
-      enum: ['google', 'email', 'both'],
-      default: 'email',
+      enum: ["google", "email", "both"],
+      default: "email",
     },
-    
-    // Email verification
+
     isEmailVerified: {
       type: Boolean,
       default: false,
@@ -56,8 +51,7 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
-    
-    // Password reset
+
     resetPasswordToken: {
       type: String,
       default: null,
@@ -66,8 +60,7 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
-    
-    // Refresh tokens
+
     refreshTokens: [
       {
         token: {
@@ -77,11 +70,11 @@ const userSchema = new mongoose.Schema(
         createdAt: {
           type: Date,
           default: Date.now,
-          expires: 604800, // 7 days in seconds
+          expires: 604800,
         },
       },
     ],
-    
+
     lastLogin: {
       type: Date,
       default: Date.now,
@@ -92,9 +85,7 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-
 userSchema.pre("save", async function (next) {
-  // Only hash if password is modified or new
   if (!this.isModified("password") || !this.password) {
     return next();
   }
@@ -108,7 +99,6 @@ userSchema.pre("save", async function (next) {
   }
 });
 
-// Method to compare password
 userSchema.methods.comparePassword = async function (candidatePassword) {
   if (!this.password) {
     throw new Error("No password set for this user");
@@ -116,9 +106,7 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
-// Method to add refresh token
 userSchema.methods.addRefreshToken = function (token) {
-  // Keep only last 5 refresh tokens per user (multiple device support)
   if (this.refreshTokens.length >= 5) {
     this.refreshTokens.shift();
   }

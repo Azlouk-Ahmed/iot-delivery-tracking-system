@@ -12,37 +12,32 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        // Get high-res photo
         const photo = profile.photos?.[0]?.value?.replace("=s96-c", "=s400-c");
 
         const email = profile.emails[0].value.toLowerCase();
-        
-        // Check if user exists by email or googleId
+
         let user = await User.findOne({
           $or: [{ googleId: profile.id }, { email: email }],
         });
 
         if (user) {
-          // Update existing user
           if (!user.googleId) {
-            // User registered with email/password, now linking Google
             user.googleId = profile.id;
-            user.authMethod = user.password ? 'both' : 'google';
+            user.authMethod = user.password ? "both" : "google";
           }
           user.name = profile.displayName;
           user.email = email;
           user.photo = photo;
           user.lastLogin = new Date();
-          user.isEmailVerified = true; // Google emails are verified
+          user.isEmailVerified = true;
           await user.save();
         } else {
-          // Create new user with Google
           user = await User.create({
             googleId: profile.id,
             email: email,
             name: profile.displayName,
             photo: photo,
-            authMethod: 'google',
+            authMethod: "google",
             isEmailVerified: true,
           });
         }
@@ -57,12 +52,10 @@ passport.use(
   )
 );
 
-// Serialize only user ID to session
 passport.serializeUser((user, done) => {
   done(null, user._id);
 });
 
-// Deserialize user from database
 passport.deserializeUser(async (id, done) => {
   try {
     const user = await User.findById(id).select("-refreshTokens");

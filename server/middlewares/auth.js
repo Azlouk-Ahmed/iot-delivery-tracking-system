@@ -1,15 +1,10 @@
 const { verifyAccessToken } = require("../utils/jwt-utils");
 const User = require("../models/user");
 
-/**
- * Middleware to verify JWT access token
- * Attaches user to req.user if valid
- */
 const authenticateToken = async (req, res, next) => {
   try {
-    // Get token from Authorization header
     const authHeader = req.headers.authorization;
-    const token = authHeader && authHeader.split(" ")[1]; // Bearer TOKEN
+    const token = authHeader && authHeader.split(" ")[1];
 
     if (!token) {
       return res.status(401).json({
@@ -18,10 +13,8 @@ const authenticateToken = async (req, res, next) => {
       });
     }
 
-    // Verify token
     const decoded = verifyAccessToken(token);
 
-    // Fetch user from database
     const user = await User.findById(decoded._id).select("-refreshTokens");
 
     if (!user) {
@@ -31,10 +24,23 @@ const authenticateToken = async (req, res, next) => {
       });
     }
 
-    // Attach user to request
     req.user = user;
     next();
   } catch (error) {
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({
+        success: false,
+        message: "Access token expired",
+      });
+    }
+
+    if (error.name === "JsonWebTokenError") {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid access token",
+      });
+    }
+
     return res.status(403).json({
       success: false,
       message: error.message || "Invalid token",
@@ -42,10 +48,6 @@ const authenticateToken = async (req, res, next) => {
   }
 };
 
-/**
- * Optional authentication - doesn't fail if no token
- * Used for routes that work for both authenticated and non-authenticated users
- */
 const optionalAuth = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
@@ -60,7 +62,6 @@ const optionalAuth = async (req, res, next) => {
     }
     next();
   } catch (error) {
-    // Continue without user
     next();
   }
 };

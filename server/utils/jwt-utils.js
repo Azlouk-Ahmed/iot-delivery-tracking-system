@@ -1,53 +1,35 @@
 const jwt = require("jsonwebtoken");
 
-/**
- * Generate access token (short-lived)
- * @param {string} userId - User ID
- * @returns {string} JWT access token
- */
 const generateAccessToken = (userId) => {
   return jwt.sign(
     { _id: userId, type: "access" },
     process.env.JWT_ACCESS_SECRET,
-    { expiresIn: "15m" } // 15 minutes
+    { expiresIn: "10s" }
   );
 };
 
-/**
- * Generate refresh token (long-lived)
- * @param {string} userId - User ID
- * @returns {string} JWT refresh token
- */
 const generateRefreshToken = (userId) => {
   return jwt.sign(
     { _id: userId, type: "refresh" },
     process.env.JWT_REFRESH_SECRET,
-    { expiresIn: "7d" } // 7 days
+    { expiresIn: "7d" }
   );
 };
 
-/**
- * Verify access token
- * @param {string} token - JWT token
- * @returns {object} Decoded token payload
- */
 const verifyAccessToken = (token) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+
     if (decoded.type !== "access") {
       throw new Error("Invalid token type");
     }
+
     return decoded;
   } catch (error) {
-    throw new Error("Invalid or expired access token");
+    throw error;
   }
 };
 
-/**
- * Verify refresh token
- * @param {string} token - JWT token
- * @returns {object} Decoded token payload
- */
 const verifyRefreshToken = (token) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
@@ -56,7 +38,7 @@ const verifyRefreshToken = (token) => {
     }
     return decoded;
   } catch (error) {
-    throw new Error("Invalid or expired refresh token");
+    throw new Error("Invalid or try to login again");
   }
 };
 
