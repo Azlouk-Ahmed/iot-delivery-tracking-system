@@ -132,7 +132,7 @@ export const menuConfig: MenuConfig = {
         items: [{ title: "Compte", url: "/settings", icon: Settings }],
       },
     ],
-  chauffeur: [
+  driver: [
       {
         label: "Mes opérations",
         items: [
@@ -156,7 +156,7 @@ export const menuConfig: MenuConfig = {
         items: [{ title: "Paramètres", url: "/settings", icon: Settings }],
       },
     ],
-  client: [
+  user: [
       {
         label: "Suivi des commandes",
         items: [

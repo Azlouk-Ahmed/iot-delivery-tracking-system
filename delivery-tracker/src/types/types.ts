@@ -1,6 +1,6 @@
 import { type LucideIcon } from "lucide-react";
 
-export type Role = "super_admin" | "admin" | "client" | "chauffeur";
+export type Role = "super_admin" | "admin" | "user" | "driver";
 
 export interface SubMenuItem {
   title: string;
@@ -29,6 +29,7 @@ export interface User {
   name?: string;
   email?: string;
   photo?: string | null;
+  role?: Role;
   authMethod?: string;
   isEmailVerified?: boolean;
   createdAt?: string;
@@ -37,10 +38,10 @@ export interface User {
 export interface AuthState {
   user: User | null;
   accessToken: string | null;
-  isLoading: boolean; // Added loading state
+  isLoading: boolean;
 }
 
 export type AuthAction =
   | { type: "LOGIN"; payload: { user: User; accessToken: string } }
   | { type: "LOGOUT" }
-  | { type: "SET_LOADING"; payload: boolean }; // Added loading action
+  | { type: "SET_LOADING"; payload: boolean }; 

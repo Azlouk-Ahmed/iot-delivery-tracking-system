@@ -40,7 +40,7 @@ router.get("/refresh", authController.refreshAccessToken);
 
 router.get("/redirect", authenticateToken, authController.redirect);
 
-router.get("/me", authenticateToken, authorizeRoles([ALLOWED_ROLES.USER]), authController.getMe);
+router.get("/me", authenticateToken, authController.getMe);
 
 router.post("/logout", authController.logout);
 

@@ -32,7 +32,8 @@ import { menuConfig } from "@/lib/menu-config";
 import { useAuthContext } from "@/hooks/useAuthContext";
 
 function Navbar() {
-  const role: Role = "super_admin"; 
+  const { user } = useAuthContext()
+  const role: Role = user?.role;
   const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
 
   const toggleItem = (key: string) => {
@@ -41,9 +42,6 @@ function Navbar() {
 
  
   const currentGroups = menuConfig[role] || [];
-
-  const {user} = useAuthContext();
-
   return (
     <Sidebar>
       <SidebarContent>
