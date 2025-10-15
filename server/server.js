@@ -2,18 +2,48 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
-const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
-require("dotenv").config();
-
-const passportSetup = require("./config/google-auth-config");
-require("./mqtt/mqttClient");
 const passport = require("passport");
+const http = require("http");
+const { Server } = require("socket.io");
 const authRouter = require("./routes/auth");
 const vehicleRouter = require("./routes/vehicle");
 const trajectoryRouter = require("./routes/trajectory");
+require("dotenv").config();
+require("./config/google-auth-config");
 
 const app = express();
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: process.env.CLIENT_URL,
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
+});
+
+app.set("io", io);
+
+io.on("connection", (socket) => {
+  console.log(`✅ Client connected: ${socket.id}`);
+
+  socket.on("disconnect", () => {
+    console.log(`❌ Client disconnected: ${socket.id}`);
+  });
+
+  socket.on("join-vehicle", (vehicleId) => {
+    socket.join(`vehicle-${vehicleId}`);
+    console.log(`📡 Client ${socket.id} joined room: vehicle-${vehicleId}`);
+  });
+
+  socket.on("leave-vehicle", (vehicleId) => {
+    socket.leave(`vehicle-${vehicleId}`);
+    console.log(`📡 Client ${socket.id} left room: vehicle-${vehicleId}`);
+  });
+});
+
+require("./mqtt/mqttClient")(io);
 
 // const limiter = rateLimit({
 //   windowMs: 15 * 60 * 1000,
@@ -71,9 +101,10 @@ mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
     console.log("✅ Connected to MongoDB");
-    app.listen(PORT, () => {
+    server.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
       console.log(`📍 Environment: ${process.env.NODE_ENV || "development"}`);
+      console.log(`🔌 Socket.IO ready on port ${PORT}`);
     });
   })
   .catch((err) => {
@@ -83,9 +114,12 @@ mongoose
 
 process.on("SIGTERM", () => {
   console.log("SIGTERM received, closing server...");
-  mongoose.connection.close(() => {
-    console.log("MongoDB connection closed");
-    process.exit(0);
+  io.close(() => {
+    console.log("Socket.IO connections closed");
+    mongoose.connection.close(() => {
+      console.log("MongoDB connection closed");
+      process.exit(0);
+    });
   });
 });
 
