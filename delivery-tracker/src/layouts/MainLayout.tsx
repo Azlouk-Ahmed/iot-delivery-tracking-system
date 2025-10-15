@@ -20,7 +20,6 @@ const MainLayout: React.FC = () => {
         <SidebarTrigger />
         <Outlet />
       </div>
-      <Footer />
     </SidebarProvider>
   );
 };

@@ -1,3 +1,4 @@
+// hooks/useLogout.ts
 import { axiosPrivate } from "@/api/axios";
 import { useAuthContext } from "./useAuthContext";
 import { useCallback } from "react";
@@ -7,7 +8,8 @@ const useLogout = () => {
 
   const logout = useCallback(async () => {
     try {
-      await axiosPrivate.post("/logout", {}, {
+      console.log("Logging out...");
+      await axiosPrivate.post("/auth/logout", {}, {
         withCredentials: true,
       });
     } catch (error) {
@@ -17,7 +19,7 @@ const useLogout = () => {
     }
   }, [dispatch]);
 
-  return logout;
+  return { logout };
 };
 
 export default useLogout;

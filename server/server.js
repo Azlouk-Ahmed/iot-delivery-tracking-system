@@ -7,8 +7,11 @@ const rateLimit = require("express-rate-limit");
 require("dotenv").config();
 
 const passportSetup = require("./config/google-auth-config");
+require("./mqtt/mqttClient");
 const passport = require("passport");
 const authRouter = require("./routes/auth");
+const vehicleRouter = require("./routes/vehicle");
+const trajectoryRouter = require("./routes/trajectory");
 
 const app = express();
 
@@ -43,6 +46,8 @@ app.get("/health", (req, res) => {
 });
 
 app.use("/auth", authRouter);
+app.use("/trajectory", trajectoryRouter);
+app.use("/vehicle", vehicleRouter);
 
 app.use((req, res) => {
   res.status(404).json({

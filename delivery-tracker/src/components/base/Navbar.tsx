@@ -30,6 +30,7 @@ import { ChevronRight, ChevronUp } from "lucide-react";
 import type { Role } from "@/types/types";
 import { menuConfig } from "@/lib/menu-config";
 import { useAuthContext } from "@/hooks/useAuthContext";
+import useLogout from "@/hooks/useLogOut";
 
 function Navbar() {
   const { user } = useAuthContext()
@@ -39,6 +40,7 @@ function Navbar() {
   const toggleItem = (key: string) => {
     setOpenItems((prev) => ({ ...prev, [key]: !prev[key] }));
   };
+  const {logout} = useLogout()
 
  
   const currentGroups = menuConfig[role] || [];
@@ -47,7 +49,7 @@ function Navbar() {
       <SidebarContent>
         {currentGroups.map((group) => (
           <SidebarGroup key={group.label}>
-            <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+            <SidebarGroupLabel className="cursor-pointer">{group.label}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {group.items.map((item) => {
@@ -60,11 +62,11 @@ function Navbar() {
                         key={item.title}
                         open={isOpen}
                         onOpenChange={() => toggleItem(itemKey)}
-                        className="group/collapsible"
+                        className="group/collapsible cursor-pointer"
                       >
                         <SidebarMenuItem>
                           <CollapsibleTrigger asChild>
-                            <SidebarMenuButton>
+                            <SidebarMenuButton className="cursor-pointer">
                               <item.icon />
                               <span>{item.title}</span>
                               <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
@@ -109,7 +111,7 @@ function Navbar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+              <DropdownMenuTrigger asChild className="cursor-pointer">
                 <SidebarMenuButton className="h-auto py-2">
                   <Avatar>
                     <AvatarImage src={user?.photo} />
@@ -125,13 +127,18 @@ function Navbar() {
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
               <DropdownMenuContent side="top" className="w-56">
-                <DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer">
                   <span>Account</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer">
                   <span>Billing</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem 
+                onClick={(e) => {
+                  e.preventDefault();
+                  logout();
+                }}
+                className="cursor-pointer">
                   <span>Sign out</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
