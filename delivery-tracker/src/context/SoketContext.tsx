@@ -1,3 +1,4 @@
+import { useAuthContext } from '@/hooks/useAuthContext';
 import { createContext, useContext, useEffect, useState,type ReactNode } from 'react';
 import { io, Socket } from 'socket.io-client';
 
@@ -59,13 +60,20 @@ interface SocketProviderProps {
 export const SocketProvider = ({ children }: SocketProviderProps) => {
   const [socket, setSocket] = useState<SocketType | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const {user} = useAuthContext();
 
   useEffect(() => {
+    if (!user) return;
     const socketInstance: SocketType = io(
       import.meta.env.VITE_API_URL || 'http://localhost:5000',
       {
         withCredentials: true,
         autoConnect: true,
+        auth: { 
+            name: `${user.name}`, 
+            role: `${user.role}`,
+            userId: `${user._id}` 
+        }
       }
     );
 
@@ -88,7 +96,7 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
     return () => {
       socketInstance.disconnect();
     };
-  }, []);
+  }, [user]);
 
   const joinVehicle = (vehicleId: string) => {
     if (socket?.connected) {

@@ -9,6 +9,10 @@ const { Server } = require("socket.io");
 const authRouter = require("./routes/auth");
 const vehicleRouter = require("./routes/vehicle");
 const trajectoryRouter = require("./routes/trajectory");
+const ALLOWED_ROLES = require("./config/roles-list");
+const User = require("./models/user");
+const Vehicle = require("./models/vehicle");
+const Company = require("./models/company");
 require("dotenv").config();
 require("./config/google-auth-config");
 
@@ -23,18 +27,91 @@ const io = new Server(server, {
   },
 });
 
+
+
 app.set("io", io);
 
-io.on("connection", (socket) => {
-  console.log(`✅ Client connected: ${socket.id}`);
+io.on("connection", async (socket) => {
+  const { name, role, userId } = socket.handshake.auth;
+  
+  console.log(`Welcome back ${name} (${role})`);
+  
+  // Only allow super_admin and admin to connect
+  if (role !== ALLOWED_ROLES.SUPER_ADMIN && role !== ALLOWED_ROLES.ADMIN) {
+    console.log(`❌ Unauthorized role: ${role} - Connection rejected`);
+    socket.emit("unauthorized", { 
+      message: "Only administrators can access real-time tracking" 
+    });
+    socket.disconnect(true);
+    return;
+  }
+
+  // Store user info on socket for later use
+  socket.userData = { name, role, userId };
+
+  // For admins, get their company ID
+  if (role === ALLOWED_ROLES.ADMIN) {
+    try {
+      console.log(`Fetching company for admin ${userId}...`);
+      const company = await Company.findOne({ admins: userId });
+      if (!company) {
+        console.log(`❌ Admin ${name} has no company - Connection rejected`);
+        socket.emit("unauthorized", { 
+          message: "Admin account not linked to a company" 
+        });
+        socket.disconnect(true);
+        return;
+      }
+      socket.userData.companyId = company._id.toString();
+      console.log(`✅ Admin ${name} connected - Company: ${company.name}`);
+    } catch (error) {
+      console.error(`❌ Error fetching admin data:`, error);
+      socket.disconnect(true);
+      return;
+    }
+  } else {
+    console.log(`✅ Super Admin ${name} connected - Full access`);
+  }
 
   socket.on("disconnect", () => {
-    console.log(`❌ Client disconnected: ${socket.id}`);
+    console.log(`❌ Client disconnected: ${socket.id} (${name})`);
   });
 
-  socket.on("join-vehicle", (vehicleId) => {
-    socket.join(`vehicle-${vehicleId}`);
-    console.log(`📡 Client ${socket.id} joined room: vehicle-${vehicleId}`);
+  socket.on("join-vehicle", async (vehicleId) => {
+    try {
+      // Verify vehicle exists
+      const vehicle = await Vehicle.findOne({ vehicleId }).populate('companyId');
+      
+      if (!vehicle) {
+        socket.emit("error", { message: `Vehicle ${vehicleId} not found` });
+        return;
+      }
+
+      // Super admin can join any vehicle
+      if (socket.userData.role === ALLOWED_ROLES.SUPER_ADMIN) {
+        socket.join(`vehicle-${vehicleId}`);
+        console.log(`📡 Super Admin ${socket.id} joined room: vehicle-${vehicleId}`);
+        socket.emit("joined-vehicle", { vehicleId, success: true });
+        return;
+      }
+
+      // Admin can only join vehicles from their company
+      if (socket.userData.role === ALLOWED_ROLES.ADMIN) {
+        if (vehicle.companyId._id.toString() === socket.userData.companyId) {
+          socket.join(`vehicle-${vehicleId}`);
+          console.log(`📡 Admin ${socket.id} joined room: vehicle-${vehicleId}`);
+          socket.emit("joined-vehicle", { vehicleId, success: true });
+        } else {
+          console.log(`⚠️ Admin ${socket.id} denied access to vehicle-${vehicleId} (different company)`);
+          socket.emit("error", { 
+            message: `Access denied: Vehicle belongs to another company` 
+          });
+        }
+      }
+    } catch (error) {
+      console.error(`Error joining vehicle room:`, error);
+      socket.emit("error", { message: "Failed to join vehicle room" });
+    }
   });
 
   socket.on("leave-vehicle", (vehicleId) => {

@@ -48,25 +48,7 @@ const authenticateToken = async (req, res, next) => {
   }
 };
 
-const optionalAuth = async (req, res, next) => {
-  try {
-    const authHeader = req.headers.authorization;
-    const token = authHeader && authHeader.split(" ")[1];
-
-    if (token) {
-      const decoded = verifyAccessToken(token);
-      const user = await User.findById(decoded._id).select("-refreshTokens");
-      if (user) {
-        req.user = user;
-      }
-    }
-    next();
-  } catch (error) {
-    next();
-  }
-};
 
 module.exports = {
   authenticateToken,
-  optionalAuth,
 };

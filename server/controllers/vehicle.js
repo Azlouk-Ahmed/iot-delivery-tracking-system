@@ -1,13 +1,13 @@
 const Vehicle = require('../models/vehicle');
 const User = require('../models/user');
 
-// 🟢 CREATE - Add New Vehicle
-// 🟢 CREATE - AUTO-ID GENERATION (REPLACE OLD CREATE)
+
+
 exports.createVehicle = async (req, res) => {
   try {
-    const { model, licensePlate, driverId } = req.body; // ❌ NO vehicleId!
+    const { model, licensePlate, driverId, companyId } = req.body; 
 
-    // Validate driver
+    
     const driver = await User.findById(driverId);
     if (!driver || driver.role !== 'driver') {
       return res.status(400).json({
@@ -16,12 +16,12 @@ exports.createVehicle = async (req, res) => {
       });
     }
 
-    // 🔥 AUTO-GENERATE vehicleId
+    
     const vehicleCount = await Vehicle.countDocuments();
     const nextId = String(vehicleCount + 1).padStart(3, '0');
     const vehicleId = `VEHICLE_${nextId}`;
 
-    // Check license plate unique
+    
     const existingPlate = await Vehicle.findOne({ licensePlate });
     if (existingPlate) {
       return res.status(400).json({
@@ -31,9 +31,10 @@ exports.createVehicle = async (req, res) => {
     }
 
     const vehicle = new Vehicle({
-      vehicleId, // 🔥 AUTO-GENERATED
+      vehicleId, 
       model,
       licensePlate,
+      companyId,
       driverId
     });
 
@@ -53,7 +54,7 @@ exports.createVehicle = async (req, res) => {
   }
 };
 
-// 🔵 READ - Get All Vehicles
+
 exports.getAllVehicles = async (req, res) => {
   try {
     const { activeOnly, driverId } = req.query;
@@ -79,7 +80,7 @@ exports.getAllVehicles = async (req, res) => {
   }
 };
 
-// 🔵 READ - Get Single Vehicle
+
 exports.getVehicleById = async (req, res) => {
   try {
     const { vehicleId } = req.params;
@@ -106,13 +107,13 @@ exports.getVehicleById = async (req, res) => {
   }
 };
 
-// 🟡 UPDATE - Update Vehicle
+
 exports.updateVehicle = async (req, res) => {
   try {
     const { vehicleId } = req.params;
     const updates = req.body;
 
-    // Validate driver if changing
+    
     if (updates.driverId) {
       const driver = await User.findById(updates.driverId);
       if (!driver || driver.role !== 'driver') {
@@ -149,7 +150,7 @@ exports.updateVehicle = async (req, res) => {
   }
 };
 
-// 🔴 DELETE - Delete Vehicle
+
 exports.deleteVehicle = async (req, res) => {
   try {
     const { vehicleId } = req.params;
@@ -174,7 +175,7 @@ exports.deleteVehicle = async (req, res) => {
   }
 };
 
-// ⚡ UPDATE STATUS - Set Active/Inactive (For MQTT)
+
 exports.updateVehicleStatus = async (req, res) => {
   try {
     const { vehicleId } = req.params;
