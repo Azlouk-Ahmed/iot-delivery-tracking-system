@@ -1,41 +1,38 @@
 const mqtt = require("mqtt");
+const { randomUUID } = require("crypto");
 const Vehicle = require("../models/vehicle");
 const Trajectory = require("../models/trajectory");
-const Company = require("../models/company"); // Add this
-const { randomUUID } = require('crypto');
+const Company = require("../models/company");
 const ALLOWED_ROLES = require("../config/roles-list");
+const logger = require("../utils/logger");
+const brokerConfig = require("../config/mqtt-config");
 
 module.exports = (io) => {
   const activeVehicles = new Map();
-  const HEARTBEAT_TIMEOUT = 30000; 
-  const heartbeatTimeouts = new Map(); 
+  const HEARTBEAT_TIMEOUT = 30000;
+  const heartbeatTimeouts = new Map();
+  
 
-  const brokerUrl = "mqtt://broker.hivemq.com";
+  const brokerUrl = brokerConfig.host;
   const options = {
-    clientId: "backend_service_" + Math.random().toString(16).substr(2, 8),
-    clean: true,
+    clientId: brokerConfig.options.clientId,
+    clean: brokerConfig.options.clean,
   };
 
-  console.log("[MQTT] Connecting to broker...");
-
+  logger.info("MQTT", "Connecting to broker...");
   const client = mqtt.connect(brokerUrl, options);
 
-  // Helper function to emit data based on user roles
+  // ---------------- EMIT HELPERS ----------------
   const emitToAuthorizedClients = (eventName, data, companyId = null) => {
-    // Get all connected sockets
-    const sockets = io.sockets.sockets;
-    
-    sockets.forEach((socket) => {
+    io.sockets.sockets.forEach((socket) => {
       const userData = socket.userData;
-      
-      if (!userData) return; // Skip if no user data
-      
-      // Super admin gets everything
+      if (!userData) return;
+
       if (userData.role === ALLOWED_ROLES.SUPER_ADMIN) {
         socket.emit(eventName, data);
         return;
       }
-      
+
       if (userData.role === ALLOWED_ROLES.ADMIN && companyId) {
         if (userData.companyId === companyId.toString()) {
           socket.emit(eventName, data);
@@ -44,23 +41,28 @@ module.exports = (io) => {
     });
   };
 
+  // ---------------- TIMEOUT HANDLING ----------------
   const handleVehicleTimeout = async (vehicleId) => {
     const vehicle = await Vehicle.findOne({ vehicleId })
-      .populate('driverId', 'name')
-      .populate('companyId', 'name');
-      
+      .populate("driverId", "name")
+      .populate("companyId", "name");
+
     if (!vehicle) return;
 
     const driverName = vehicle.driverId.name;
     const model = vehicle.model;
     const companyId = vehicle.companyId._id;
+    const companyName = vehicle.companyId.name;
     const session = activeVehicles.get(vehicleId);
 
     activeVehicles.delete(vehicleId);
     clearTimeout(heartbeatTimeouts.get(vehicleId));
     heartbeatTimeouts.delete(vehicleId);
 
-    console.log(`\n🚗⏰ ${driverName} TIMEOUT - Vehicle OFF (${model})\n`);
+    logger.warn(
+      "MQTT",
+      `Vehicle timeout detected: ${driverName} (${vehicleId} - ${model}) [${companyName}]`
+    );
 
     const statusData = {
       vehicleId,
@@ -68,93 +70,88 @@ module.exports = (io) => {
       driverName,
       model,
       companyId,
-      companyName: vehicle.companyId.name,
+      companyName,
       sessionId: session?.sessionId,
       timestamp: new Date().toISOString(),
-      reason: "No GPS updates for 30 seconds"
+      reason: "No GPS updates for 30 seconds",
     };
 
-    // Emit to authorized clients based on company
     emitToAuthorizedClients("vehicle-status", statusData, companyId);
-
-    // Emit to vehicle-specific room (already filtered by join-vehicle)
-    io.to(`vehicle-${vehicleId}`).emit("vehicle-stopped", {
-      vehicleId,
-      driverName,
-      model,
-      sessionId: session?.sessionId,
-      timestamp: new Date().toISOString(),
-      reason: "Timeout - No GPS updates"
-    });
+    io.to(`vehicle-${vehicleId}`).emit("vehicle-stopped", statusData);
   };
 
+  // ---------------- HEARTBEAT ----------------
   const startHeartbeat = (vehicleId) => {
     clearTimeout(heartbeatTimeouts.get(vehicleId));
-    
-    const timeout = setTimeout(() => {
-      handleVehicleTimeout(vehicleId);
-    }, HEARTBEAT_TIMEOUT);
-    
+    const timeout = setTimeout(() => handleVehicleTimeout(vehicleId), HEARTBEAT_TIMEOUT);
     heartbeatTimeouts.set(vehicleId, timeout);
-    console.log(`⏰ Heartbeat started for ${vehicleId} (${HEARTBEAT_TIMEOUT/1000}s)`);
+    logger.info("Heartbeat", `Started for ${vehicleId} (${HEARTBEAT_TIMEOUT / 1000}s timeout)`);
   };
 
   const resetHeartbeat = (vehicleId) => {
     if (activeVehicles.has(vehicleId)) {
       clearTimeout(heartbeatTimeouts.get(vehicleId));
       startHeartbeat(vehicleId);
-      console.log(`🔄 Heartbeat reset for ${vehicleId}`);
+      logger.info("Heartbeat", `Reset for ${vehicleId}`);
     }
   };
 
+  // ---------------- MQTT CONNECTION EVENTS ----------------
   client.on("connect", () => {
-    console.log("[MQTT] ✅ Connected to broker");
-    
+    logger.success("MQTT", "Connected to broker");
+
     client.subscribe("vehicles/+/status", { qos: 1 }, (err) => {
-      if (!err) console.log("✅ [MQTT] Subscribed: vehicles/+/status");
+      if (err) logger.error("MQTT", `Subscription error (status): ${err.message}`);
+      else logger.success("MQTT", "Subscribed to topic: vehicles/+/status");
     });
+
     client.subscribe("vehicles/+/gps", { qos: 1 }, (err) => {
-      if (!err) console.log("✅ [MQTT] Subscribed: vehicles/+/gps");
+      if (err) logger.error("MQTT", `Subscription error (gps): ${err.message}`);
+      else logger.success("MQTT", "Subscribed to topic: vehicles/+/gps");
     });
   });
 
+  // ---------------- MESSAGE HANDLING ----------------
   client.on("message", async (topic, message) => {
     try {
-      const topicParts = topic.toString().split('/');
-      const vehicleId = topicParts[1];
-      const messageType = topicParts[2];
+      const [_, vehicleId, messageType] = topic.split("/");
       const payload = JSON.parse(message.toString());
       const timestamp = new Date(payload.timestamp).toLocaleTimeString();
 
       const vehicle = await Vehicle.findOne({ vehicleId })
-        .populate('driverId', 'name')
-        .populate('companyId', 'name');
-        
+        .populate("driverId", "name")
+        .populate("companyId", "name");
+
       if (!vehicle) {
-        console.log(`⚠️ Unknown vehicle: ${vehicleId}`);
+        logger.warn("MQTT", `Unknown vehicle received: ${vehicleId}`);
         return;
       }
-      
+
       const driverName = vehicle.driverId.name;
       const model = vehicle.model;
       const companyId = vehicle.companyId._id;
       const companyName = vehicle.companyId.name;
 
-      if (messageType === 'status') {      
+      // ---------- Vehicle Status ----------
+      if (messageType === "status") {
         if (payload.status === "ON") {
           const sessionId = randomUUID();
-          activeVehicles.set(vehicleId, { 
-            sessionId, 
-            driverName, 
-            model, 
-            companyId: companyId.toString() 
+
+          activeVehicles.set(vehicleId, {
+            sessionId,
+            driverName,
+            model,
+            companyId: companyId.toString(),
           });
-          
+
           startHeartbeat(vehicleId);
-          
-          console.log(`\n🚗✅ ${driverName} just turned on his vehicle (${vehicleId} - ${model}) [${companyName}]`);
-          console.log(`   📡 Listening to ${driverName}'s GPS coordinates\n`);
-          
+
+          logger.success(
+            "Vehicle",
+            `${driverName} turned ON vehicle (${vehicleId} - ${model}) [${companyName}]`
+          );
+          logger.info("Vehicle", `Listening for GPS updates from ${driverName}`);
+
           const statusData = {
             vehicleId,
             status: "ON",
@@ -163,29 +160,23 @@ module.exports = (io) => {
             companyId,
             companyName,
             sessionId,
-            timestamp: payload.timestamp
+            timestamp: payload.timestamp,
           };
 
-          // Emit to authorized clients
           emitToAuthorizedClients("vehicle-status", statusData, companyId);
-          
-          // Emit to vehicle-specific room
-          io.to(`vehicle-${vehicleId}`).emit("vehicle-started", {
-            vehicleId,
-            driverName,
-            model,
-            sessionId,
-            timestamp: payload.timestamp
-          });
+          io.to(`vehicle-${vehicleId}`).emit("vehicle-started", statusData);
         } else {
           const session = activeVehicles.get(vehicleId);
-          
+
           activeVehicles.delete(vehicleId);
           clearTimeout(heartbeatTimeouts.get(vehicleId));
           heartbeatTimeouts.delete(vehicleId);
-          
-          console.log(`\n🚗❌ ${driverName} turned off his vehicle (${model}) [${companyName}]\n`);
-          
+
+          logger.info(
+            "Vehicle",
+            `${driverName} turned OFF vehicle (${vehicleId} - ${model}) [${companyName}]`
+          );
+
           const statusData = {
             vehicleId,
             status: "OFF",
@@ -194,36 +185,33 @@ module.exports = (io) => {
             companyId,
             companyName,
             sessionId: session?.sessionId,
-            timestamp: payload.timestamp
+            timestamp: payload.timestamp,
           };
 
-          // Emit to authorized clients
           emitToAuthorizedClients("vehicle-status", statusData, companyId);
-          
-          // Emit to vehicle-specific room
-          io.to(`vehicle-${vehicleId}`).emit("vehicle-stopped", {
-            vehicleId,
-            driverName,
-            model,
-            sessionId: session?.sessionId,
-            timestamp: payload.timestamp
-          });
+          io.to(`vehicle-${vehicleId}`).emit("vehicle-stopped", statusData);
         }
       }
-      else if (messageType === 'gps' && activeVehicles.has(vehicleId)) {
+
+      // ---------- GPS Data ----------
+      else if (messageType === "gps" && activeVehicles.has(vehicleId)) {
         const session = activeVehicles.get(vehicleId);
+
         const traj = new Trajectory({
           vehicleId,
           sessionId: session.sessionId,
           latitude: payload.latitude,
-          longitude: payload.longitude
+          longitude: payload.longitude,
         });
+
         await traj.save();
-        
         resetHeartbeat(vehicleId);
-        
-        console.log(`📡 GPS [${timestamp}] ${driverName}: Lat:${payload.latitude.toFixed(4)}, Lng:${payload.longitude.toFixed(4)} [${companyName}]`);
-        
+
+        logger.info(
+          "GPS",
+          `${driverName} [${timestamp}] Lat:${payload.latitude.toFixed(4)}, Lng:${payload.longitude.toFixed(4)} [${companyName}]`
+        );
+
         const gpsData = {
           vehicleId,
           sessionId: session.sessionId,
@@ -233,47 +221,39 @@ module.exports = (io) => {
           companyName,
           latitude: payload.latitude,
           longitude: payload.longitude,
-          timestamp: payload.timestamp
+          timestamp: payload.timestamp,
         };
 
-        // Emit to authorized clients
         emitToAuthorizedClients("vehicle-gps", gpsData, companyId);
-        
-        // Emit to vehicle-specific room
-        io.to(`vehicle-${vehicleId}`).emit("gps-update", {
-          vehicleId,
-          sessionId: session.sessionId,
-          latitude: payload.latitude,
-          longitude: payload.longitude,
-          timestamp: payload.timestamp
-        });
+        io.to(`vehicle-${vehicleId}`).emit("gps-update", gpsData);
       }
     } catch (err) {
-      console.error("[MQTT] ❌ Error:", err.message);
-      
-      // Only emit errors to super admins
-      const sockets = io.sockets.sockets;
-      sockets.forEach((socket) => {
+      logger.error("MQTT", `Message handling error: ${err.message}`);
+
+      io.sockets.sockets.forEach((socket) => {
         if (socket.userData?.role === ALLOWED_ROLES.SUPER_ADMIN) {
           socket.emit("mqtt-error", {
             message: err.message,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
           });
         }
       });
     }
   });
 
+  // ---------------- CONNECTION ERROR ----------------
   client.on("error", (err) => {
-    console.error("[MQTT] ❌ Connection error:", err.message);
+    logger.error("MQTT", `Connection error: ${err.message}`);
   });
 
-  process.on('SIGTERM', () => {
-    console.log("[MQTT] Shutting down - clearing timeouts...");
-    heartbeatTimeouts.forEach(timeout => clearTimeout(timeout));
+  // ---------------- SHUTDOWN HANDLER ----------------
+  process.on("SIGTERM", () => {
+    logger.warn("MQTT", "SIGTERM received, shutting down...");
+    heartbeatTimeouts.forEach((timeout) => clearTimeout(timeout));
     heartbeatTimeouts.clear();
     activeVehicles.clear();
     client.end();
+    logger.info("MQTT", "All heartbeats cleared and client disconnected");
   });
 
   return client;

@@ -8,7 +8,6 @@ const trajectorySchema = new mongoose.Schema({
     timestamp: { type: Date, default: Date.now }
 }, { timestamps: true });
 
-// Index for fast queries by vehicle + time
 trajectorySchema.index({ vehicleId: 1, timestamp: -1 });
 
 module.exports = mongoose.model('Trajectory', trajectorySchema);

@@ -1,12 +1,12 @@
 const Trajectory = require('../models/trajectory');
 const Vehicle = require('../models/vehicle');
 
-// 🟢 CREATE - Add GPS Point (For MQTT)
+
 exports.createTrajectory = async (req, res) => {
   try {
     const { vehicleId, sessionId, latitude, longitude } = req.body;
 
-    // Validate vehicle exists
+    
     const vehicle = await Vehicle.findOne({ vehicleId });
     if (!vehicle) {
       return res.status(400).json({
@@ -37,7 +37,7 @@ exports.createTrajectory = async (req, res) => {
   }
 };
 
-// 🔵 READ - Get All Trajectories
+
 exports.getAllTrajectories = async (req, res) => {
   try {
     const { vehicleId, sessionId, startDate, endDate } = req.query;
@@ -52,7 +52,7 @@ exports.getAllTrajectories = async (req, res) => {
     }
 
     const trajectories = await Trajectory.find(filter)
-      .sort({ timestamp: 1 }) // Chronological order
+      .sort({ timestamp: 1 }) 
       .limit(1000);
 
     res.status(200).json({
@@ -68,7 +68,7 @@ exports.getAllTrajectories = async (req, res) => {
   }
 };
 
-// 🔵 READ - Get Vehicle Trajectory (With Driver Info)
+
 exports.getVehicleTrajectory = async (req, res) => {
   try {
     const { vehicleId } = req.params;
@@ -81,7 +81,7 @@ exports.getVehicleTrajectory = async (req, res) => {
       .sort({ timestamp: -1 })
       .limit(parseInt(limit));
 
-    // Get vehicle + driver info
+    
     const vehicle = await Vehicle.findOne({ vehicleId })
       .populate('driverId', 'name email');
 
@@ -99,7 +99,7 @@ exports.getVehicleTrajectory = async (req, res) => {
   }
 };
 
-// 🟡 UPDATE - Update GPS Point
+
 exports.updateTrajectory = async (req, res) => {
   try {
     const { id } = req.params;
@@ -131,7 +131,7 @@ exports.updateTrajectory = async (req, res) => {
   }
 };
 
-// 🔴 DELETE - Delete Trajectory
+
 exports.deleteTrajectory = async (req, res) => {
   try {
     const { id } = req.params;
@@ -156,7 +156,7 @@ exports.deleteTrajectory = async (req, res) => {
   }
 };
 
-// 🗑️ DELETE - Clear Vehicle Trajectories
+
 exports.clearVehicleTrajectories = async (req, res) => {
   try {
     const { vehicleId } = req.params;
