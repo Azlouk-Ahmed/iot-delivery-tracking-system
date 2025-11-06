@@ -45,3 +45,16 @@ export type AuthAction =
   | { type: "LOGIN"; payload: { user: User; accessToken: string } }
   | { type: "LOGOUT" }
   | { type: "SET_LOADING"; payload: boolean }; 
+
+export interface UseFetchOptions {
+    immediate?: boolean;
+    useAuth?: boolean;
+    dependencies?: any[];
+}
+
+export interface UseFetchReturn<T> {
+    data: T | null;
+    loading: boolean;
+    error: string | null;
+    refetch: () => Promise<void>;
+}
