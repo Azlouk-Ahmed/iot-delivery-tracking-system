@@ -61,7 +61,6 @@ export const menuConfig: MenuConfig = {
               { title: "Manage", url: "/deliveries/manage", icon: Settings },
             ]
           },
-          { title: "Suivi des véhicules", url: "/vehicles", icon: Truck },
           { 
             title: "Suivi en temps réel", 
             url: "/tracking", 

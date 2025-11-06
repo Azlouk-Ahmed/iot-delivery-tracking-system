@@ -1,6 +1,6 @@
 import { type LucideIcon } from "lucide-react";
 
-export type Role = "super_admin" | "admin" | "user" | "driver";
+export type Role = "super_admin" | "admin" | "user" | "driver" | undefined;
 
 export interface SubMenuItem {
   title: string;

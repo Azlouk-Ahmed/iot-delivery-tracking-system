@@ -11,6 +11,8 @@ const UserHome = React.lazy(() => import("../pages/UserHome"));
 const Login = React.lazy(() => import("../pages/Login"));
 const Signup = React.lazy(() => import("../pages/SignUp"));
 const AuthCallback = React.lazy(() => import("../pages/AuthCallback"));
+const AllCompanies = React.lazy(() => import("../pages/super admin/AllCompanies"));
+const AddCompanies = React.lazy(() => import("../pages/super admin/AddCompany"));
 const MainLayout = React.lazy(() => import("../layouts/MainLayout"));
 
 const Router = () => {
@@ -23,9 +25,7 @@ const Router = () => {
         {
           path: "/",
           element: (
-            <React.Suspense fallback={<div>Loading...</div>}>
               <MainLayout />
-            </React.Suspense>
           ),
           children: [
             {
@@ -46,6 +46,35 @@ const Router = () => {
                 </React.Suspense>
               ),
             },
+             // Super Admin Routes
+    ...(role === "super_admin"
+      ? [
+          {
+            path: "companies/all",
+            element: (
+              <React.Suspense fallback={<div>Loading...</div>}>
+                <AllCompanies />
+              </React.Suspense>
+            ),
+          },
+          {
+            path: "companies/add",
+            element: (
+              <React.Suspense fallback={<div>Loading...</div>}>
+                <AddCompanies />
+              </React.Suspense>
+            ),
+          },
+          {
+            path: "companies/manage",
+            element: (
+              <React.Suspense fallback={<div>Loading...</div>}>
+                <div>manage</div>
+              </React.Suspense>
+            ),
+          },
+        ]
+      : []),
           ],
         },
       ],
@@ -73,11 +102,7 @@ const Router = () => {
           <AuthCallback />
         </React.Suspense>
       ),
-    },
-    {
-      path: "*",
-      element: <div>Page Not Found</div>,
-    },
+    }
   ];
 
   return useRoutes(routes);

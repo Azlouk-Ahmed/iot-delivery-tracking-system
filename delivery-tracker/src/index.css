@@ -16,6 +16,7 @@
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.1450 0 0);
   --primary: oklch(0.2050 0 0);
+  --blue: oklch(57.034% 0.1334 241.201);
   --primary-foreground: oklch(0.9850 0 0);
   --secondary: oklch(0.9700 0 0);
   --secondary-foreground: oklch(0.2050 0 0);
@@ -68,6 +69,7 @@
   --popover: oklch(0.2690 0 0);
   --popover-foreground: oklch(0.9850 0 0);
   --primary: oklch(0.7082 0.1393 96.7240);
+  --blue: oklch(57.034% 0.1334 241.201);
   --primary-foreground: oklch(1.0000 0 0);
   --secondary: oklch(0.2690 0 0);
   --secondary-foreground: oklch(0.9850 0 0);
@@ -221,6 +223,7 @@ select:-webkit-autofill:focus {
   scrollbar-width: thin;
   scrollbar-color: oklch(0.7080 0 0 / 0.3) transparent;
 }
+
 
 .dark * {
   scrollbar-color: oklch(0.4390 0 0 / 0.4) transparent;
