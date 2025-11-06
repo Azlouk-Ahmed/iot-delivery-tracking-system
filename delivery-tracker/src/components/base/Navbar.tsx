@@ -49,7 +49,7 @@ function Navbar() {
       <SidebarContent>
         {currentGroups.map((group) => (
           <SidebarGroup key={group.label}>
-            <SidebarGroupLabel className="cursor-pointer">{group.label}</SidebarGroupLabel>
+            <SidebarGroupLabel className="cursor-pointer text-xs ">{group.label}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {group.items.map((item) => {
@@ -62,24 +62,24 @@ function Navbar() {
                         key={item.title}
                         open={isOpen}
                         onOpenChange={() => toggleItem(itemKey)}
-                        className="group/collapsible cursor-pointer"
+                        className="group/collapsible cursor-pointer mt-1.5"
                       >
                         <SidebarMenuItem>
                           <CollapsibleTrigger asChild>
                             <SidebarMenuButton className="cursor-pointer">
                               <item.icon />
-                              <span>{item.title}</span>
+                              <span className="font-bold text-sm ">{item.title}</span>
                               <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                             </SidebarMenuButton>
                           </CollapsibleTrigger>
-                          <CollapsibleContent>
+                          <CollapsibleContent className="CollapsibleContent">
                             <SidebarMenuSub>
                               {item.subItems.map((subItem) => (
                                 <SidebarMenuSubItem key={subItem.title}>
                                   <SidebarMenuSubButton asChild>
                                     <a href={subItem.url}>
                                       <subItem.icon className="h-4 w-4" />
-                                      <span>{subItem.title}</span>
+                                      <span className="text-sm ">{subItem.title}</span>
                                     </a>
                                   </SidebarMenuSubButton>
                                 </SidebarMenuSubItem>
