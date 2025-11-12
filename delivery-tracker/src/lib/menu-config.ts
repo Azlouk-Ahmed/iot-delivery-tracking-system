@@ -81,56 +81,66 @@ export const menuConfig: MenuConfig = {
         ],
       },
     ],
-  admin: [
-      {
-        label: "Gestion",
-        items: [
-          { title: "Tableau de bord", url: "/dashboard", icon: Home },
-          { 
-            title: "Livraisons", 
-            url: "/deliveries", 
-            icon: Package,
-            subItems: [
-              { title: "Toutes", url: "/deliveries/all", icon: List },
-              { title: "En cours", url: "/deliveries/ongoing", icon: Truck },
-              { title: "Livrées", url: "/deliveries/completed", icon: CheckCircle },
-              { title: "Planifiées", url: "/deliveries/scheduled", icon: Calendar },
-            ]
-          },
-          { 
-            title: "Véhicules", 
-            url: "/vehicles", 
-            icon: Truck,
-            subItems: [
-              { title: "Tous les véhicules", url: "/vehicles/all", icon: List },
-              { title: "Disponibles", url: "/vehicles/available", icon: Car },
-              { title: "En service", url: "/vehicles/in-service", icon: Truck },
-            ]
-          },
-          { 
-            title: "Chauffeurs", 
-            url: "/drivers", 
-            icon: Users,
-            subItems: [
-              { title: "Tous les chauffeurs", url: "/drivers/all", icon: List },
-              { title: "En service", url: "/drivers/active", icon: CheckCircle },
-              { title: "Hors service", url: "/drivers/offline", icon: XCircle },
-            ]
-          },
-        ],
+admin: [
+  {
+    label: "Management",
+    items: [
+      { title: "Dashboard", url: "/dashboard", icon: Home },
+      { 
+        title: "Personnel Management",  // TRANSLATED
+        url: "/personnel", 
+        icon: Users,
+        subItems: [
+          { title: "Admins", url: "/personnel/admins", icon: ShieldCheck },
+          { title: "Drivers", url: "/personnel/drivers", icon: Truck },
+          { title: "Clients", url: "/personnel/clients", icon: Users },
+        ]
       },
-      {
-        label: "Suivi & Alertes",
-        items: [
-          { title: "Carte en temps réel", url: "/tracking", icon: MapPin },
-          { title: "Alertes", url: "/alerts", icon: Bell },
-        ],
+      { 
+        title: "Deliveries", 
+        url: "/deliveries", 
+        icon: Package,
+        subItems: [
+          { title: "All", url: "/deliveries/all", icon: List },
+          { title: "In Progress", url: "/deliveries/ongoing", icon: Truck },
+          { title: "Delivered", url: "/deliveries/completed", icon: CheckCircle },
+          { title: "Scheduled", url: "/deliveries/scheduled", icon: Calendar },
+        ]
       },
-      {
-        label: "Paramètres",
-        items: [{ title: "Compte", url: "/settings", icon: Settings }],
+      { 
+        title: "Vehicles", 
+        url: "/vehicles", 
+        icon: Truck,
+        subItems: [
+          { title: "All Vehicles", url: "/vehicles/all", icon: List },
+          { title: "Available", url: "/vehicles/available", icon: Car },
+          { title: "In Service", url: "/vehicles/in-service", icon: Truck },
+        ]
+      },
+      { 
+        title: "Drivers", 
+        url: "/drivers", 
+        icon: Users,
+        subItems: [
+          // { title: "All Drivers", url: "/drivers/all", icon: List },
+          { title: "In Service", url: "/drivers/active", icon: CheckCircle },
+          { title: "Offline", url: "/drivers/offline", icon: XCircle },
+        ]
       },
     ],
+  },
+  {
+    label: "Tracking & Alerts",
+    items: [
+      { title: "Real-Time Map", url: "/tracking", icon: MapPin },
+      { title: "Alerts", url: "/alerts", icon: Bell },
+    ],
+  },
+  {
+    label: "Settings",
+    items: [{ title: "Account", url: "/settings", icon: Settings }],
+  },
+],
   driver: [
       {
         label: "Mes opérations",

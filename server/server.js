@@ -15,6 +15,7 @@ const ALLOWED_ROLES = require("./config/roles-list");
 const User = require("./models/user");
 const Vehicle = require("./models/vehicle");
 const Company = require("./models/company");
+const userRouter = require("./routes/userRoutes");
 
 require("dotenv").config();
 require("./config/google-auth-config");
@@ -136,6 +137,7 @@ app.get("/health", (req, res) => {
 app.use("/auth", authRouter);
 app.use("/trajectory", trajectoryRouter);
 app.use("/vehicle", vehicleRouter);
+app.use("/api/users", userRouter);
 
 // ---------------- 404 Handler ----------------
 app.use((req, res) => {
