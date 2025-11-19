@@ -1,3 +1,5 @@
+/* English version of AdminDashboard.jsx (all French texts translated) */
+
 'use client';
 
 import React, { useState } from "react";
@@ -124,20 +126,23 @@ export default function AdminDashboard() {
     switch (status) {
       case "enRoute":
         return {
-          label: "En Route",
-          class: "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900 dark:text-blue-300 dark:border-blue-700",
+          label: "On Route",
+          class:
+            "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900 dark:text-blue-300 dark:border-blue-700",
           icon: <Activity className="w-3 h-3" />,
         };
       case "loading":
         return {
-          label: "Chargement",
-          class: "bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900 dark:text-yellow-300 dark:border-yellow-700",
+          label: "Loading",
+          class:
+            "bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900 dark:text-yellow-300 dark:border-yellow-700",
           icon: <Package className="w-3 h-3" />,
         };
       case "delivered":
         return {
-          label: "Livré",
-          class: "bg-green-100 text-green-700 border-green-200 dark:bg-green-900 dark:text-green-300 dark:border-green-700",
+          label: "Delivered",
+          class:
+            "bg-green-100 text-green-700 border-green-200 dark:bg-green-900 dark:text-green-300 dark:border-green-700",
           icon: <CheckCircle className="w-3 h-3" />,
         };
       default:
@@ -151,17 +156,15 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen p-4 sm:p-6">
-      {" "}
-      {/* Default background */}
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-3">
             <Activity className="w-10 h-10 text-primary" />
-            Tableau de Bord - Suivi des Livraisons
+            Dashboard – Delivery Tracking
           </h1>
           <p className="text-muted-foreground mt-1">
-            Surveillance en temps réel de votre flotte et analyse des performances
+            Real-time fleet monitoring and performance analytics
           </p>
         </div>
 
@@ -169,42 +172,42 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
             {
-              title: "Véhicules Actifs",
+              title: "Active Vehicles",
               value: stats.activeVehicles,
               icon: <Truck className="w-6 h-6" />,
               footer: (
                 <>
-                  <Radio className="w-3 h-3 mr-1 animate-pulse" /> Suivi en direct
+                  <Radio className="w-3 h-3 mr-1 animate-pulse" /> Live Tracking
                 </>
               ),
             },
             {
-              title: "Livrées Aujourd'hui",
+              title: "Delivered Today",
               value: `${stats.completedToday}/${stats.todayDeliveries}`,
               icon: <CheckCircle className="w-6 h-6" />,
               footer: (
                 <>
-                  <TrendingUp className="w-3 h-3 mr-1" /> {stats.onTimeRate}% à temps
+                  <TrendingUp className="w-3 h-3 mr-1" /> {stats.onTimeRate}% on time
                 </>
               ),
             },
             {
-              title: "Temps Moyen",
+              title: "Average Time",
               value: stats.averageTime,
               icon: <Clock className="w-6 h-6" />,
               footer: (
                 <>
-                  <Activity className="w-3 h-3 mr-1" /> Par livraison
+                  <Activity className="w-3 h-3 mr-1" /> Per delivery
                 </>
               ),
             },
             {
-              title: "Distance Totale",
+              title: "Total Distance",
               value: stats.totalDistance,
               icon: <Navigation className="w-6 h-6" />,
               footer: (
                 <>
-                  <MapPin className="w-3 h-3 mr-1" /> Aujourd'hui
+                  <MapPin className="w-3 h-3 mr-1" /> Today
                 </>
               ),
             },
@@ -230,7 +233,7 @@ export default function AdminDashboard() {
 
         {/* Main Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left: Map + History */}
+          {/* Left Panel */}
           <div className="lg:col-span-2 space-y-6">
             {/* Toggle */}
             <div className="flex gap-2">
@@ -239,195 +242,122 @@ export default function AdminDashboard() {
                 variant={view === "live" ? "default" : "outline"}
               >
                 <Radio className="w-4 h-4 mr-2" />
-                Suivi en Direct
+                Live Tracking
               </Button>
               <Button
                 onClick={() => setView("history")}
                 variant={view === "history" ? "default" : "outline"}
               >
                 <Clock className="w-4 h-4 mr-2" />
-                Historique
+                History
               </Button>
             </div>
 
             {/* Map */}
             <Card className="overflow-hidden">
               <CardContent className="p-0">
-                <div className="h-96">
-                  {view === "live" ? (
-                    <MapContainer
-                      center={[36.8065, 10.1815]}
-                      zoom={13}
-                      className="h-full w-full"
-                    >
-                      <TileLayer
-                        attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>'
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                      />
-                      {activeVehicles.map((v) => (
-                        <Marker
-                          key={v.id}
-                          position={[v.location.lat, v.location.lng]}
-                          icon={truckIcon}
-                        >
-                          <Popup>
-                            <div className="text-sm">
-                              <strong>{v.vehicle}</strong>
-                              <br />
-                              Chauffeur: {v.driver}
-                              <br />
-                              Statut: {getStatusConfig(v.status).label}
-                              <br />
-                              ETA: {v.eta}
-                            </div>
-                          </Popup>
-                        </Marker>
-                      ))}
-                    </MapContainer>
-                  ) : (
-                    <div className="flex items-center justify-center h-full text-muted-foreground">
-                      <Clock className="w-5 h-5 mr-2" />
-                      Historique des trajets à venir...
-                    </div>
-                  )}
-                </div>
+                {view === "live" ? (
+                  <MapContainer
+                    center={[36.8065, 10.1815]}
+                    zoom={13}
+                    style={{ height: "450px", width: "100%" }}
+                  >
+                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+
+                    {activeVehicles.map((v) => (
+                      <Marker
+                        key={v.id}
+                        position={[v.location.lat, v.location.lng]}
+                        icon={truckIcon}
+                        eventHandlers={{
+                          click: () => setSelectedVehicle(v.id),
+                        }}
+                      >
+                        <Popup>
+                          <div className="font-semibold">{v.vehicle}</div>
+                          <div>Driver: {v.driver}</div>
+                          <div>Destination: {v.destination}</div>
+                          <div>ETA: {v.eta}</div>
+                        </Popup>
+                      </Marker>
+                    ))}
+                  </MapContainer>
+                ) : (
+                  <div className="p-6 text-sm text-muted-foreground">
+                    Select a delivery from the right panel to view route history.
+                  </div>
+                )}
               </CardContent>
             </Card>
-
-            {/* Delivery History */}
-            {view === "history" && (
-              <Card>
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <Clock className="w-5 h-5" />
-                    Livraisons Récentes
-                  </h3>
-                  <div className="space-y-3">
-                    {deliveryHistory.map((d) => (
-                      <div
-                        key={d.id}
-                        className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border"
-                      >
-                        <div>
-                          <p className="font-semibold text-sm">{d.order}</p>
-                          <p className="text-xs text-muted-foreground mt-1 flex items-center">
-                            <Navigation className="w-3 h-3 mr-1" />
-                            {d.route}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-xs text-muted-foreground">
-                            {d.duration} • {d.distance}
-                          </p>
-                          <p className="text-xs text-green-600 dark:text-green-400 mt-1">
-                            Check {d.completed}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
           </div>
 
-          {/* Right: Active Vehicles */}
-          <div className="space-y-4">
-            <Card>
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                  <Truck className="w-5 h-5" />
-                  Véhicules Actifs ({activeVehicles.length})
-                </h3>
-                <div className="space-y-3">
+          {/* Right Panel */}
+          <div className="space-y-6">
+            {/* Live Vehicles List */}
+            {view === "live" && (
+              <Card>
+                <CardContent className="p-4 space-y-4">
+                  <h2 className="text-lg font-semibold flex items-center gap-2">
+                    <Truck className="w-5 h-5 text-primary" /> Active Vehicles
+                  </h2>
+
                   {activeVehicles.map((v) => {
                     const status = getStatusConfig(v.status);
                     return (
                       <div
                         key={v.id}
-                        onClick={() =>
-                          setSelectedVehicle(selectedVehicle === v.id ? null : v.id)
-                        }
-                        className={`p-4 rounded-lg border-2 transition-all cursor-pointer ${
-                          selectedVehicle === v.id
-                            ? "border-primary bg-primary/5"
-                            : "border-border hover:border-muted-foreground/50"
+                        onClick={() => setSelectedVehicle(v.id)}
+                        className={`p-4 border rounded-xl cursor-pointer hover:bg-muted transition ${
+                          selectedVehicle === v.id ? "bg-muted" : ""
                         }`}
                       >
-                        <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center justify-between">
                           <div>
-                            <p className="font-semibold text-sm">{v.driver}</p>
-                            <p className="text-xs text-muted-foreground">{v.vehicle}</p>
+                            <p className="font-semibold">{v.vehicle}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {v.driver}
+                            </p>
                           </div>
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 border ${status.class}`}
+                          <div
+                            className={`px-2 py-1 text-xs rounded-lg border flex items-center gap-1 ${status.class}`}
                           >
-                            {status.icon}
-                            {status.label}
-                          </span>
-                        </div>
-
-                        <div className="space-y-2 text-xs text-muted-foreground">
-                          <div className="flex items-center">
-                            <MapPin className="w-3 h-3 mr-2" />
-                            {v.destination}
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <span>
-                              <Clock className="w-3 h-3 inline mr-1" />
-                              {v.eta}
-                            </span>
-                            <span>
-                              <Activity className="w-3 h-3 inline mr-1" />
-                              {v.speed} km/h
-                            </span>
+                            {status.icon} {status.label}
                           </div>
                         </div>
-
-                        {selectedVehicle === v.id && (
-                          <div className="mt-3 pt-3 border-t border-border">
-                            <Button size="sm" className="w-full text-xs">
-                              <Navigation className="w-3 h-3 mr-2" />
-                              Suivre sur la Carte
-                            </Button>
-                          </div>
-                        )}
+                        <div className="mt-2 text-xs text-muted-foreground">
+                          Destination: {v.destination} — ETA {v.eta}
+                        </div>
                       </div>
                     );
                   })}
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            )}
 
-            {/* Quick Actions */}
-            <Card>
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold mb-4">Actions Rapides</h3>
-                <div className="space-y-2">
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start"
-                    onClick={() => navigate("/deliveries/add")}
-                  >
-                    <Package className="w-4 h-4 mr-2" /> Nouvelle Livraison
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start"
-                    onClick={() => navigate("/personnel/chauffeurs")}
-                  >
-                    <Users className="w-4 h-4 mr-2" /> Gérer les Chauffeurs
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start"
-                    onClick={() => navigate("/dashboard")}
-                  >
-                    <TrendingUp className="w-4 h-4 mr-2" /> Rapport Journalier
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            {/* History List */}
+            {view === "history" && (
+              <Card>
+                <CardContent className="p-4 space-y-4">
+                  <h2 className="text-lg font-semibold flex items-center gap-2">
+                    <Clock className="w-5 h-5 text-primary" /> Delivery History
+                  </h2>
+
+                  {deliveryHistory.map((h) => (
+                    <div
+                      key={h.id}
+                      className="p-4 border rounded-xl hover:bg-muted transition"
+                    >
+                      <p className="font-semibold">{h.order}</p>
+                      <p className="text-xs text-muted-foreground">{h.route}</p>
+                      <div className="mt-2 text-xs text-muted-foreground">
+                        Duration: {h.duration} — Distance: {h.distance}
+                      </div>
+                      <p className="text-xs mt-1">Completed at {h.completed}</p>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
       </div>

@@ -6,17 +6,20 @@ import type { Role } from "@/types/types";
 
 // Admin Pages
 import AdminDashboard from "@/pages/admin/AdminDashboard";
-import AddDelivery from "@/pages/admin/AddDelivery";
-import AllDeliveries from "@/pages/admin/AllDeliveries";
-import DriverManagement from "@/pages/admin/DriverManagement";
-import ClientManagement from "@/pages/admin/ClientManagement";
-import InProgressDeliveries from "@/pages/admin/InProgressDeliveries";
-import DeliveredDeliveries from "@/pages/admin/DeliveredDeliveries";
-import PlannedDeliveries from "@/pages/admin/PlannedDeliveries";
-import AdminManagement from "@/pages/admin/AdminManagement";
-import InServiceDrivers from "@/pages/admin/InServiceDrivers";
-import OfflineDrivers from "@/pages/admin/OfflineDrivers";
-import VehicleManagement from "@/pages/admin/VehicleManagement";
+import AddDelivery from "@/pages/admin/delivery/AddDelivery";
+import AllDeliveries from "@/pages/admin/delivery/AllDeliveries";
+import DriverManagement from "@/pages/admin/personalManagement/DriverManagement";
+import ClientManagement from "@/pages/admin/personalManagement/ClientManagement";
+import InProgressDeliveries from "@/pages/admin/delivery/InProgressDeliveries";
+import DeliveredDeliveries from "@/pages/admin/delivery/DeliveredDeliveries";
+import PlannedDeliveries from "@/pages/admin/delivery/PlannedDeliveries";
+import AdminManagement from "@/pages/admin/personalManagement/AdminManagement";
+import InServiceDrivers from "@/pages/admin/driver/InServiceDrivers";
+import OfflineDrivers from "@/pages/admin/driver/OfflineDrivers";
+import VehicleManagement from "@/pages/admin/vehicle/VehicleManagement";
+import AvailableVehicles from "@/pages/admin/vehicle/AvailableVehicles";
+import InServiceVehicles from "@/pages/admin/vehicle/InServiceVehicles";
+import AlertsPage from "@/pages/admin/AlertsPanel";
 
 // Lazy Loaded Pages
 const Home = React.lazy(() => import("../pages/Home"));
@@ -94,10 +97,26 @@ const Router = () => {
               ? [
                   // Dashboard
                   {
+  index: true,   // ← CHANGE path: ""  →  index: true
+  element: (
+    <React.Suspense fallback={<div>Loading...</div>}>
+      <AdminDashboard />
+    </React.Suspense>
+  ),
+},
+                  {
                     path: "dashboard",
                     element: (
                       <React.Suspense fallback={<div>Loading...</div>}>
                         <AdminDashboard />
+                      </React.Suspense>
+                    ),
+                  },
+                   {
+                    path: "/alerts",
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <AlertsPage />
                       </React.Suspense>
                     ),
                   },
@@ -144,6 +163,7 @@ const Router = () => {
                     ),
                   },
                   {
+                  
                     path: "deliveries/ongoing",
                     element: (
                       <React.Suspense fallback={<div>Loading...</div>}>
@@ -189,6 +209,22 @@ const Router = () => {
                     element: (
                       <React.Suspense fallback={<div>Loading...</div>}>
                         <VehicleManagement />
+                      </React.Suspense>
+                    ),
+                  },
+                  {
+                    path: "vehicles/available",
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <AvailableVehicles />
+                      </React.Suspense>
+                    ),
+                  },
+                   {
+                    path: "vehicles/in-service",
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        < InServiceVehicles/>
                       </React.Suspense>
                     ),
                   },

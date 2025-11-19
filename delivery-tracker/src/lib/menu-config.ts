@@ -83,11 +83,11 @@ export const menuConfig: MenuConfig = {
     ],
 admin: [
   {
-    label: "Management",
+    label: "Admin Management",
     items: [
       { title: "Dashboard", url: "/dashboard", icon: Home },
       { 
-        title: "Personnel Management",  // TRANSLATED
+        title: "Personnel Management",  
         url: "/personnel", 
         icon: Users,
         subItems: [
@@ -136,10 +136,10 @@ admin: [
       { title: "Alerts", url: "/alerts", icon: Bell },
     ],
   },
-  {
+  /*{
     label: "Settings",
     items: [{ title: "Account", url: "/settings", icon: Settings }],
-  },
+  },*/
 ],
   driver: [
       {
