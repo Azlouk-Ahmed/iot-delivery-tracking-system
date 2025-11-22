@@ -10,6 +10,7 @@ const logger = require("./utils/logger");
 
 const authRouter = require("./routes/auth");
 const vehicleRouter = require("./routes/vehicle");
+const deliveryRouter = require("./routes/delivery");
 const trajectoryRouter = require("./routes/trajectory");
 const ALLOWED_ROLES = require("./config/roles-list");
 const User = require("./models/user");
@@ -136,6 +137,7 @@ app.get("/health", (req, res) => {
 app.use("/auth", authRouter);
 app.use("/trajectory", trajectoryRouter);
 app.use("/vehicle", vehicleRouter);
+app.use("/delivery", deliveryRouter);
 
 // ---------------- 404 Handler ----------------
 app.use((req, res) => {

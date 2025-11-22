@@ -11,70 +11,435 @@ const UserHome = React.lazy(() => import("../pages/UserHome"));
 const Login = React.lazy(() => import("../pages/Login"));
 const Signup = React.lazy(() => import("../pages/SignUp"));
 const AuthCallback = React.lazy(() => import("../pages/AuthCallback"));
-const AllCompanies = React.lazy(() => import("../pages/super admin/AllCompanies"));
-const AddCompanies = React.lazy(() => import("../pages/super admin/AddCompany"));
+const AllCompanies = React.lazy(
+  () => import("../pages/super admin/AllCompanies")
+);
+const AddCompanies = React.lazy(
+  () => import("../pages/super admin/AddCompany")
+);
+const SuperAdminsManagement = React.lazy(
+  () => import("../pages/super admin/SuperAdmin")
+);
+const AdminsManagement = React.lazy(
+  () => import("../pages/super admin/Admins")
+);
+const DriversManagement = React.lazy(
+  () => import("../pages/super admin/Drivers")
+);
+const Trajectories = React.lazy(
+  () => import("../pages/super admin/Trajectories")
+);
+const Dashboard = React.lazy(() => import("../pages/super admin/Dashboard"));
 const MainLayout = React.lazy(() => import("../layouts/MainLayout"));
+const OrdersOngoing = React.lazy(() => import("@/pages/client/ordersOngoing"));
+const OrdersCompleted = React.lazy(
+  () => import("@/pages/client/ordersCompleted")
+);
+const OrdersHistory = React.lazy(() => import("@/pages/client/ordersHistory"));
+const Clientnotify = React.lazy(() => import("@/pages/client/Clientnotify"));
+const RealTimeTracking = React.lazy(
+  () => import("@/pages/client/realTimeTracking")
+);
+const DashboardClient = React.lazy(() => import("@/pages/client/ClientHome"));
+
+const AllTrips = React.lazy(() => import("../pages/chauffeur/AllTrips"));
+const CurrentTrips = React.lazy(
+  () => import("../pages/chauffeur/CurrentTrips")
+);
+const UpcomingTrips = React.lazy(
+  () => import("../pages/chauffeur/UpcommingTrips")
+);
+const TripsHistorique = React.lazy(
+  () => import("../pages/chauffeur/TripsHistorique")
+);
+const Deliveries = React.lazy(() => import("../pages/chauffeur/Deliveries"));
+const DriverAlerts = React.lazy(
+  () => import("../pages/chauffeur/DriverAlerts")
+);
+
+const AdminDashboard = React.lazy(() => import("@/pages/admin/AdminDashboard"));
+const AddDelivery = React.lazy(
+  () => import("@/pages/admin/delivery/AddDelivery")
+);
+const AllDeliveries = React.lazy(
+  () => import("@/pages/admin/delivery/AllDeliveries")
+);
+const DriverManagement = React.lazy(
+  () => import("@/pages/admin/personalManagement/DriverManagement")
+);
+const ClientManagement = React.lazy(
+  () => import("@/pages/admin/personalManagement/ClientManagement")
+);
+const InProgressDeliveries = React.lazy(
+  () => import("@/pages/admin/delivery/InProgressDeliveries")
+);
+const DeliveredDeliveries = React.lazy(
+  () => import("@/pages/admin/delivery/DeliveredDeliveries")
+);
+const PlannedDeliveries = React.lazy(
+  () => import("@/pages/admin/delivery/PlannedDeliveries")
+);
+const AdminManagement = React.lazy(
+  () => import("@/pages/admin/personalManagement/AdminManagement")
+);
+const InServiceDrivers = React.lazy(
+  () => import("@/pages/admin/driver/InServiceDrivers")
+);
+const OfflineDrivers = React.lazy(
+  () => import("@/pages/admin/driver/OfflineDrivers")
+);
+const VehicleManagement = React.lazy(
+  () => import("@/pages/admin/vehicle/VehicleManagement")
+);
+const AvailableVehicles = React.lazy(
+  () => import("@/pages/admin/vehicle/AvailableVehicles")
+);
+const InServiceVehicles = React.lazy(
+  () => import("@/pages/admin/vehicle/InServiceVehicles")
+);
+const AlertsPage = React.lazy(() => import("@/pages/admin/AlertsPanel"));
 
 const Router = () => {
-  const { user} = useAuthContext();
-  const role : Role = user?.role;
+  const { user } = useAuthContext();
+  const role: Role = user?.role;
+
   const routes = [
     {
       element: <RequireAuth />,
       children: [
         {
           path: "/",
-          element: (
-              <MainLayout />
-          ),
+          element: <MainLayout />,
           children: [
-            {
-              path: "/",
-              element: (
-                <React.Suspense fallback={<div>Loading...</div>}>
-                  {!user ? (
-                    <div>Loading user...</div>
-                  ) : role === "admin" ? (
-                    <AdminHome />
-                  ) : role === "driver" ? (
-                    <DriverHome />
-                  ) : role === "user" ? (
-                    <UserHome />
-                  ) : (
-                    <Home />
-                  )}
-                </React.Suspense>
-              ),
-            },
-             // Super Admin Routes
-    ...(role === "super_admin"
-      ? [
-          {
-            path: "companies/all",
-            element: (
-              <React.Suspense fallback={<div>Loading...</div>}>
-                <AllCompanies />
-              </React.Suspense>
-            ),
-          },
-          {
-            path: "companies/add",
-            element: (
-              <React.Suspense fallback={<div>Loading...</div>}>
-                <AddCompanies />
-              </React.Suspense>
-            ),
-          },
-          {
-            path: "companies/manage",
-            element: (
-              <React.Suspense fallback={<div>Loading...</div>}>
-                <div>manage</div>
-              </React.Suspense>
-            ),
-          },
-        ]
-      : []),
+            ...(role === "super_admin"
+              ? [
+                  {
+                    path: "/",
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <Dashboard />
+                      </React.Suspense>
+                    ),
+                  },
+                  {
+                    path: "companies/all",
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <AllCompanies />
+                      </React.Suspense>
+                    ),
+                  },
+                  {
+                    path: "companies/add",
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <AddCompanies />
+                      </React.Suspense>
+                    ),
+                  },
+                  {
+                    path: "companies/manage",
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <div>manage</div>
+                      </React.Suspense>
+                    ),
+                  },
+                  {
+                    path: "personnel/super-admins",
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <SuperAdminsManagement />
+                      </React.Suspense>
+                    ),
+                  },
+                  {
+                    path: "personnel/admins",
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <AdminsManagement />
+                      </React.Suspense>
+                    ),
+                  },
+                  {
+                    path: "personnel/chauffeurs",
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <DriversManagement />
+                      </React.Suspense>
+                    ),
+                  },
+                  {
+                    path: "trajectories",
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <Trajectories />
+                      </React.Suspense>
+                    ),
+                  },
+                  {
+                    path: "tracking/all-cars",
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <Home />
+                      </React.Suspense>
+                    ),
+                  },
+                ]
+              : role === "admin"
+              ? [
+                  // Dashboard
+                  {
+                    index: true, // ← CHANGE path: ""  →  index: true
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <AdminDashboard />
+                      </React.Suspense>
+                    ),
+                  },
+                  {
+                    path: "dashboard",
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <AdminDashboard />
+                      </React.Suspense>
+                    ),
+                  },
+                  {
+                    path: "/alerts",
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <AlertsPage />
+                      </React.Suspense>
+                    ),
+                  },
+                  // Personnel Management
+                  {
+                    path: "personnel/drivers", // Translated: "chauffeurs" → "drivers"
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <DriverManagement />
+                      </React.Suspense>
+                    ),
+                  },
+                  {
+                    path: "personnel/clients",
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <ClientManagement />
+                      </React.Suspense>
+                    ),
+                  },
+                  {
+                    path: "personnel/admins",
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <AdminManagement />
+                      </React.Suspense>
+                    ),
+                  },
+                  // Deliveries
+                  {
+                    path: "deliveries/add",
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <AddDelivery />
+                      </React.Suspense>
+                    ),
+                  },
+                  {
+                    path: "deliveries/all",
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <AllDeliveries />
+                      </React.Suspense>
+                    ),
+                  },
+                  {
+                    path: "deliveries/ongoing",
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <InProgressDeliveries />
+                      </React.Suspense>
+                    ),
+                  },
+                  {
+                    path: "deliveries/completed",
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <DeliveredDeliveries />
+                      </React.Suspense>
+                    ),
+                  },
+                  {
+                    path: "deliveries/scheduled",
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <PlannedDeliveries />
+                      </React.Suspense>
+                    ),
+                  },
+
+                  {
+                    path: "drivers/active",
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <InServiceDrivers />
+                      </React.Suspense>
+                    ),
+                  },
+                  {
+                    path: "drivers/offline",
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <OfflineDrivers />
+                      </React.Suspense>
+                    ),
+                  },
+                  {
+                    path: "vehicles/all",
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <VehicleManagement />
+                      </React.Suspense>
+                    ),
+                  },
+                  {
+                    path: "vehicles/available",
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <AvailableVehicles />
+                      </React.Suspense>
+                    ),
+                  },
+                  {
+                    path: "vehicles/in-service",
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <InServiceVehicles />
+                      </React.Suspense>
+                    ),
+                  },
+                ]
+              : role === "user"
+              ? [
+                  {
+                    path: "/",
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <DashboardClient />
+                      </React.Suspense>
+                    ),
+                  },
+                  {
+                    path: "orders/ongoing",
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <OrdersOngoing />
+                      </React.Suspense>
+                    ),
+                  },
+                  {
+                    path: "orders/completed",
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <OrdersCompleted />
+                      </React.Suspense>
+                    ),
+                  },
+                  {
+                    path: "orders/history",
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <OrdersHistory />
+                      </React.Suspense>
+                    ),
+                  },
+                  {
+                    path: "notifications",
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <Clientnotify />
+                      </React.Suspense>
+                    ),
+                  },
+                  {
+                    path: "tracking",
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <RealTimeTracking />
+                      </React.Suspense>
+                    ),
+                  },
+                ]
+              : role === "driver"
+              ? [
+                  {
+                    path: "/",
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <DriverHome />
+                      </React.Suspense>
+                    ),
+                  },
+                  {
+                    path: "trips",
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <AllTrips />
+                      </React.Suspense>
+                    ),
+                  },
+                  {
+                    path: "trips/current",
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <CurrentTrips />
+                      </React.Suspense>
+                    ),
+                  },
+                  {
+                    path: "trips/upcoming",
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <UpcomingTrips />
+                      </React.Suspense>
+                    ),
+                  },
+                  {
+                    path: "trips/history",
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <TripsHistorique />
+                      </React.Suspense>
+                    ),
+                  },
+                  {
+                    path: "deliver",
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <Deliveries />
+                      </React.Suspense>
+                    ),
+                  },
+                  {
+                    path: "alerts",
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <DriverAlerts />
+                      </React.Suspense>
+                    ),
+                  },
+                  {
+                    path: "settings",
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <div>Driver Settings</div>
+                      </React.Suspense>
+                    ),
+                  },
+                ]
+              : []),
           ],
         },
       ],
@@ -102,7 +467,7 @@ const Router = () => {
           <AuthCallback />
         </React.Suspense>
       ),
-    }
+    },
   ];
 
   return useRoutes(routes);

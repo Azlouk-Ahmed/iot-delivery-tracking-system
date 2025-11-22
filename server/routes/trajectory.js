@@ -11,6 +11,7 @@ router.get('/vehicle/:vehicleId', trajectoryController.getVehicleTrajectory);
 
 
 router.put('/:id', trajectoryController.updateTrajectory);
+router.get('/trajectories', trajectoryController.getAllSessionsTrajectories);
 
 
 router.delete('/:id', trajectoryController.deleteTrajectory);

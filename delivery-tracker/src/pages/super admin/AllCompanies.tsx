@@ -147,35 +147,7 @@ const companies: Company[] = [
 function AllCompanies() {
   return (
     <div>
-      <div className="flex flex-wrap justify-between items-center gap-4 md:gap-12 mb-4">
-        <Card className="flex-1  bg-[url('/img/total.png')] bg-cover bg-center bg-transparent">
-            <CardContent>
-             <div className="flex gap-4 items-center">
-                <span className='font-bold text-4xl text-primary'>173</span>
-                <span>Total Partners</span>
-             </div>
-            </CardContent>
-        </Card>
-        <Card className="flex-1  bg-[url('/img/active.png')] bg-cover bg-center !bg-transparent">
-            <CardContent>
-             <div className="flex gap-4 items-center">
-                <span className='font-bold text-4xl text-[var(--blue)]'>153</span>
-                <span>Active Partners</span>
-             </div>
-            </CardContent>
-        </Card>
-        <Card className="flex-1  bg-[url('/img/suspended.png')] bg-cover bg-center bg-transparent">
-            <CardContent>
-             <div className="flex gap-4 items-center">
-                <span className='font-bold text-4xl text-[var(--destructive)]'>20</span>
-                <span>Suspended Partners</span>
-             </div>
-            </CardContent>
-        </Card>
- 
-
-
-      </div>
+      
       <div className="p-10">
       <h1 className="text-2xl font-semibold mb-6">Companies</h1>
       <DataTable columns={columns} data={companies} />

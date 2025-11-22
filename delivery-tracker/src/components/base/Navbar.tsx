@@ -1,5 +1,6 @@
 //@ts-nocheck
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { Link } from "react-router-dom"; // Import Link from react-router-dom
 import {
   Sidebar,
   SidebarContent,
@@ -33,11 +34,9 @@ import { menuConfig } from "@/lib/menu-config";
 import { useAuthContext } from "@/hooks/useAuthContext";
 import useLogout from "@/hooks/useLogOut";
 import { useSocket } from "@/hooks/useSocketContext";
-import type { VehicleData } from "@/pages/Home";
 
 function Navbar() {
-  const { socket, isConnected } = useSocket();
-  const [vehicles, setVehicles] = useState<Map<string, VehicleData>>(new Map());
+  const { isConnected, vehicles } = useSocket();
   const { user } = useAuthContext();
   const role: Role = user?.role;
   const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
@@ -47,49 +46,7 @@ function Navbar() {
   };
   const { logout } = useLogout();
 
-  // Listen to socket events for vehicle updates
-  useEffect(() => {
-    if (!socket) return;
-
-    socket.on('vehicle-status', (data) => {
-      setVehicles(prev => {
-        const updated = new Map(prev);
-        updated.set(data.vehicleId, {
-          vehicleId: data.vehicleId,
-          status: data.status,
-          driverName: data.driverName,
-          model: data.model,
-          companyName: data.companyName,
-          sessionId: data.sessionId,
-          timestamp: data.timestamp
-        });
-        return updated;
-      });
-    });
-
-    socket.on('vehicle-gps', (data) => {
-      setVehicles(prev => {
-        const updated = new Map(prev);
-        const existing = updated.get(data.vehicleId);
-        if (existing) {
-          updated.set(data.vehicleId, {
-            ...existing,
-            latitude: data.latitude,
-            longitude: data.longitude,
-            timestamp: data.timestamp
-          });
-        }
-        return updated;
-      });
-    });
-
-    return () => {
-      socket.off('vehicle-status');
-      socket.off('vehicle-gps');
-    };
-  }, [socket]);
-
-  // Calculate active vehicles count
+  // Calculate active vehicles count from context
   const activeVehiclesCount = Array.from(vehicles.values()).filter(
     v => v.status === 'ON'
   ).length;
@@ -98,8 +55,6 @@ function Navbar() {
 
   return (
     <Sidebar>
-
-
       <SidebarContent>
         {currentGroups.map((group) => (
           <SidebarGroup key={group.label}>
@@ -125,18 +80,16 @@ function Navbar() {
                             <SidebarMenuButton className="cursor-pointer">
                               <item.icon />
                               <span className="font-bold text-sm">
-                                {item.title === "Suivi en temps réel" ?
-                                (
+                                {item.title === "Suivi en temps réel" ? (
                                   <>
-                                  {
-                                    item.title
-                                  }
-                                  <span className="bg-destructive px-1 rounded  inline-block ml-2 text-[10px]">{activeVehiclesCount}</span>
+                                    {item.title}
+                                    <span className="bg-primary px-1 rounded inline-block ml-2 text-[10px] text-white">
+                                      {activeVehiclesCount}
+                                    </span>
                                   </>
-                                ) 
-                           
-                                : item.title}
-                                
+                                ) : (
+                                  item.title
+                                )}
                               </span>
                               <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                             </SidebarMenuButton>
@@ -146,12 +99,12 @@ function Navbar() {
                               {item.subItems.map((subItem) => (
                                 <SidebarMenuSubItem key={subItem.title}>
                                   <SidebarMenuSubButton asChild>
-                                    <a href={subItem.url}>
+                                    <Link to={subItem.url}>
                                       <subItem.icon className="h-4 w-4" />
                                       <span className="text-sm">
                                         {subItem.title}
                                       </span>
-                                    </a>
+                                    </Link>
                                   </SidebarMenuSubButton>
                                 </SidebarMenuSubItem>
                               ))}
@@ -165,10 +118,10 @@ function Navbar() {
                   return (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton asChild>
-                        <a href={item.url}>
+                        <Link to={item.url}>
                           <item.icon />
                           <span>{item.title}</span>
-                        </a>
+                        </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   );
