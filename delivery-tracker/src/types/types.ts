@@ -58,3 +58,59 @@ export interface UseFetchReturn<T> {
     error: string | null;
     refetch: () => Promise<void>;
 }
+export interface Member {
+  _id: number;
+  name: string;
+  avatar?: string;
+  joinedDate: string;
+  phone: string;
+  email: string;
+  suspended: boolean;
+}
+
+export interface Point {
+  latitude: number;
+  longitude: number;
+  timestamp: string;
+}
+
+export interface Driver {
+  _id: string;
+  email: string;
+  name: string;
+  photo?: string;
+}
+
+export interface Vehicle {
+  _id: string;
+  vehicleId: string;
+  model: string;
+  licensePlate: string;
+  driverId: Driver;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  companyId?: string;
+}
+
+export interface Session {
+  vehicle: Vehicle;
+  sessionId: string;
+  points: Point[];
+}
+
+export interface MemberCardProps {
+  member: Member;
+}
+
+export interface TrajectoryCardProps {
+  trajectory: Session;
+}
+
+export interface TrajectoryMapProps {
+  trajectoryArray: Session | null;
+}
+
+export interface MapBoundsProps {
+  points: Point[];
+}

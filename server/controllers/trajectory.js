@@ -68,6 +68,66 @@ exports.getAllTrajectories = async (req, res) => {
   }
 };
 
+exports.getAllSessionsTrajectories = async (req, res) => {
+  try {
+    // Group trajectories from ALL vehicles by sessionId
+    const sessions = await Trajectory.aggregate([
+      { $sort: { timestamp: 1 } },
+      {
+        $group: {
+          _id: {
+            vehicleId: "$vehicleId",
+            sessionId: "$sessionId"
+          },
+          points: {
+            $push: {
+              latitude: "$latitude",
+              longitude: "$longitude",
+              timestamp: "$timestamp"
+            }
+          }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          vehicleId: "$_id.vehicleId",
+          sessionId: "$_id.sessionId",
+          points: 1
+        }
+      }
+    ]);
+
+    // Get all distinct vehicleIds for population
+    const vehicleIds = [...new Set(sessions.map(s => s.vehicleId))];
+    const vehicles = await Vehicle.find({ vehicleId: { $in: vehicleIds } })
+      .populate('driverId', 'name email photo').populate('companyId', 'name');
+
+    // Attach vehicle info to each session
+    const enrichedSessions = sessions.map(session => {
+      const vehicle = vehicles.find(v => v.vehicleId === session.vehicleId);
+      return {
+        vehicle,
+        sessionId: session.sessionId,
+        points: session.points
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      count: enrichedSessions.length,
+      sessions: enrichedSessions
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+
 
 exports.getVehicleTrajectory = async (req, res) => {
   try {
