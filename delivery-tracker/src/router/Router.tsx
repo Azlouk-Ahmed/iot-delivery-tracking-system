@@ -188,9 +188,9 @@ const Router = () => {
                 ]
               : role === "admin"
               ? [
-                  // Dashboard
+                  
                   {
-                    index: true, // ← CHANGE path: ""  →  index: true
+                    index: true, 
                     element: (
                       <React.Suspense fallback={<div>Loading...</div>}>
                         <AdminDashboard />
@@ -213,9 +213,9 @@ const Router = () => {
                       </React.Suspense>
                     ),
                   },
-                  // Personnel Management
+                  
                   {
-                    path: "personnel/drivers", // Translated: "chauffeurs" → "drivers"
+                    path: "personnel/drivers", 
                     element: (
                       <React.Suspense fallback={<div>Loading...</div>}>
                         <DriverManagement />
@@ -238,7 +238,7 @@ const Router = () => {
                       </React.Suspense>
                     ),
                   },
-                  // Deliveries
+                  
                   {
                     path: "deliveries/add",
                     element: (
