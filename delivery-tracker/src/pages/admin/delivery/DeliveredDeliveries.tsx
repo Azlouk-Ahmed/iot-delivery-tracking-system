@@ -1,7 +1,15 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
-import { CheckCircle, Package, Clock, Filter, X, Calendar as CalendarIcon } from "lucide-react";
+import React, { useState, useMemo, useEffect } from "react";
+import {
+  CheckCircle,
+  Package,
+  Clock,
+  Filter,
+  X,
+  Calendar as CalendarIcon,
+} from "lucide-react";
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -13,7 +21,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar"; // YOUR react-day-picker
+import { Calendar } from "@/components/ui/calendar";
+
+// Pagination UI
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 // Mock data
 const initialDeliveries = [
@@ -31,6 +49,10 @@ export default function DeliveredDeliveries() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [showCalendar, setShowCalendar] = useState(false);
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 2; // change items per page here
+
   const deliveredDeliveries = deliveries.filter((d) => d.status === "delivered");
 
   const drivers = Array.from(new Set(deliveredDeliveries.map((d) => d.driver))).sort();
@@ -45,6 +67,19 @@ export default function DeliveredDeliveries() {
       return matchesClient && matchesDriver && matchesDate;
     });
   }, [deliveredDeliveries, searchClient, selectedDriver, selectedDate]);
+
+  // Reset to page 1 whenever filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchClient, selectedDriver, selectedDate]);
+
+  // Pagination logic
+  const totalPages = Math.max(1, Math.ceil(filteredDeliveries.length / itemsPerPage));
+
+  const paginatedDeliveries = filteredDeliveries.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   const clearFilters = () => {
     setSearchClient("");
@@ -63,9 +98,7 @@ export default function DeliveredDeliveries() {
             <CheckCircle className="w-6 h-6" />
             Delivered Orders
           </h1>
-          <p className="text-sm mt-1">
-            History of successfully completed deliveries.
-          </p>
+          <p className="text-sm mt-1">History of successfully completed deliveries.</p>
         </div>
 
         {/* Stats */}
@@ -132,15 +165,11 @@ export default function DeliveredDeliveries() {
 
               {/* Calendar Toggle */}
               <div className="space-y-2">
-                <Button
-                  className="w-full justify-start text-left font-normal"
-                  onClick={() => setShowCalendar(!showCalendar)}
-                >
+                <Button className="w-full justify-start" onClick={() => setShowCalendar(!showCalendar)}>
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {selectedDate ? selectedDate.toLocaleDateString() : "Pick a date"}
                 </Button>
 
-                {/* Show Calendar */}
                 {showCalendar && (
                   <div className="p-2 border rounded-md">
                     <Calendar
@@ -150,14 +179,12 @@ export default function DeliveredDeliveries() {
                         setSelectedDate(date || undefined);
                         setShowCalendar(false);
                       }}
-                      className="rounded-md"
                     />
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Clear Filters */}
             {(searchClient || selectedDriver !== "all" || selectedDate) && (
               <Button size="sm" onClick={clearFilters} className="mt-3">
                 <X className="w-4 h-4 mr-1" />
@@ -173,7 +200,7 @@ export default function DeliveredDeliveries() {
             Delivery Report ({filteredDeliveries.length})
           </h2>
 
-          {filteredDeliveries.length === 0 ? (
+          {paginatedDeliveries.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center">
                 No deliveries match your filters.
@@ -181,19 +208,21 @@ export default function DeliveredDeliveries() {
             </Card>
           ) : (
             <div className="space-y-3">
-              {filteredDeliveries.map((item) => (
+              {paginatedDeliveries.map((item) => (
                 <Card key={item.id}>
                   <CardContent className="pt-5 pb-4">
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                      <div className="flex-1">
-                        <h3 className="font-bold text-base">
-                          Order {item.order}
-                        </h3>
-                        <div className="text-sm mt-1 space-y-1">
-                          <p><span className="font-medium">Driver:</span> {item.driver}</p>
-                          <p><span className="font-medium">Client:</span> {item.client}</p>
-                          <p><span className="font-medium">Delivered:</span> {item.date} at {item.time}</p>
-                        </div>
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
+                      <div>
+                        <h3 className="font-bold text-base">Order {item.order}</h3>
+                        <p className="text-sm">
+                          <span className="font-medium">Driver:</span> {item.driver}
+                        </p>
+                        <p className="text-sm">
+                          <span className="font-medium">Client:</span> {item.client}
+                        </p>
+                        <p className="text-sm">
+                          <span className="font-medium">Delivered:</span> {item.date} at {item.time}
+                        </p>
                       </div>
                       <Badge>DELIVERED</Badge>
                     </div>
@@ -202,6 +231,30 @@ export default function DeliveredDeliveries() {
               ))}
             </div>
           )}
+
+          {/* Pagination */}
+          <div className="mt-6 flex justify-center">
+            <Pagination>
+              <PaginationPrevious
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              />
+              <PaginationContent>
+                {Array.from({ length: totalPages }).map((_, index) => (
+                  <PaginationItem key={index}>
+                    <PaginationLink
+                      isActive={currentPage === index + 1}
+                      onClick={() => setCurrentPage(index + 1)}
+                    >
+                      {index + 1}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
+              </PaginationContent>
+              <PaginationNext
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              />
+            </Pagination>
+          </div>
         </div>
       </div>
     </div>

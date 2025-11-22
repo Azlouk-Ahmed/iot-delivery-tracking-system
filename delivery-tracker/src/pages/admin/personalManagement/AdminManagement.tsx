@@ -8,12 +8,10 @@ import {
   Trash2,
   Check,
   X,
-  XCircle,
   Clock,
   CircleCheck,
   CircleX,
   Upload,
-  Image as ImageIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,6 +43,15 @@ import {
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { toast } from "sonner";
 
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationPrevious,
+  PaginationNext,
+} from "@/components/ui/pagination"; // adjust the path if needed
+
 interface Admin {
   id: number;
   name: string;
@@ -52,7 +59,7 @@ interface Admin {
   company: string;
   status: "Active" | "Inactive";
   createdAt: string;
-  photo?: string; // base64 or URL
+  photo?: string;
 }
 
 export default function AdminManagement() {
@@ -84,6 +91,38 @@ export default function AdminManagement() {
       status: "Active",
       createdAt: "2024-03-10",
     },
+    {
+      id: 4,
+      name: "Alice Brown",
+      email: "alice@techcorp.com",
+      company: "TechCorp",
+      status: "Active",
+      createdAt: "2024-03-25",
+    },
+    {
+      id: 5,
+      name: "Bob White",
+      email: "bob@techcorp.com",
+      company: "TechCorp",
+      status: "Inactive",
+      createdAt: "2024-04-05",
+    },
+    {
+      id: 6,
+      name: "Charlie Green",
+      email: "charlie@techcorp.com",
+      company: "TechCorp",
+      status: "Active",
+      createdAt: "2024-05-01",
+    },
+    {
+      id: 7,
+      name: "Charlie Green",
+      email: "charlie@techcorp.com",
+      company: "TechCorp",
+      status: "Active",
+      createdAt: "2024-05-01",
+    },
   ]);
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -99,7 +138,11 @@ export default function AdminManagement() {
     photo: "",
   });
 
-  // Filter by company and search
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  // Filter admins by company and search
   const filteredAdmins = admins
     .filter((a) => a.company === currentAdminCompany)
     .filter(
@@ -107,6 +150,12 @@ export default function AdminManagement() {
         a.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         a.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
+  const totalPages = Math.ceil(filteredAdmins.length / itemsPerPage);
+  const paginatedAdmins = filteredAdmins.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -234,7 +283,10 @@ export default function AdminManagement() {
         );
       default:
         return (
-          <Badge variant="outline" className="bg-muted text-muted-foreground flex items-center gap-1">
+          <Badge
+            variant="outline"
+            className="bg-muted text-muted-foreground flex items-center gap-1"
+          >
             <Clock className="w-3 h-3" /> {status}
           </Badge>
         );
@@ -246,11 +298,13 @@ export default function AdminManagement() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-<h1 className="text-2xl font-bold flex items-center gap-2">
-  <CircleCheck className="w-6 h-6 text-primary" />
-  Admin Management
-</h1>          <p className="text-sm text-muted-foreground">
-            Manage admins for <span className="font-medium">{currentAdminCompany}</span>
+          <h1 className="text-2xl font-bold flex items-center gap-2">
+            <CircleCheck className="w-6 h-6 text-primary" />
+            Admin Management
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Manage admins for{" "}
+            <span className="font-medium">{currentAdminCompany}</span>
           </p>
         </div>
         <Button onClick={openAddModal}>
@@ -264,7 +318,10 @@ export default function AdminManagement() {
         <Input
           placeholder="Search by name or email..."
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setCurrentPage(1); // reset page when searching
+          }}
           className="pl-10"
         />
       </div>
@@ -283,14 +340,17 @@ export default function AdminManagement() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredAdmins.length === 0 ? (
+            {paginatedAdmins.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
+                <TableCell
+                  colSpan={6}
+                  className="text-center py-10 text-muted-foreground"
+                >
                   No admins found in your company.
                 </TableCell>
               </TableRow>
             ) : (
-              filteredAdmins.map((admin) => (
+              paginatedAdmins.map((admin) => (
                 <TableRow key={admin.id} className="hover:bg-muted/50">
                   <TableCell>
                     <Avatar className="w-10 h-10 ring-2 ring-border">
@@ -303,7 +363,9 @@ export default function AdminManagement() {
                   <TableCell className="font-medium">{admin.name}</TableCell>
                   <TableCell>{admin.email}</TableCell>
                   <TableCell>{getStatusBadge(admin.status)}</TableCell>
-                  <TableCell className="text-muted-foreground">{admin.createdAt}</TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {admin.createdAt}
+                  </TableCell>
                   <TableCell>
                     <div className="flex justify-end gap-1">
                       <Button
@@ -330,10 +392,37 @@ export default function AdminManagement() {
             )}
           </TableBody>
           <TableCaption className="text-xs">
-            Showing {filteredAdmins.length} admin(s) from {currentAdminCompany}
+            Showing {paginatedAdmins.length} of {filteredAdmins.length} admin(s)
+            from {currentAdminCompany}
           </TableCaption>
         </Table>
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <Pagination className="mt-4">
+          <PaginationPrevious
+            onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+            disabled={currentPage === 1}
+          />
+          <PaginationContent>
+            {Array.from({ length: totalPages }, (_, i) => (
+              <PaginationItem key={i}>
+                <PaginationLink
+                  isActive={currentPage === i + 1}
+                  onClick={() => setCurrentPage(i + 1)}
+                >
+                  {i + 1}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+          </PaginationContent>
+          <PaginationNext
+            onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+            disabled={currentPage === totalPages}
+          />
+        </Pagination>
+      )}
 
       {/* Modal */}
       <Dialog open={showModal} onOpenChange={setShowModal}>
@@ -431,7 +520,11 @@ export default function AdminManagement() {
             </div>
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setShowModal(false)}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowModal(false)}
+              >
                 <X className="w-4 h-4 mr-1" /> Cancel
               </Button>
               <Button type="submit">

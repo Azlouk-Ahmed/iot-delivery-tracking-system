@@ -10,7 +10,6 @@ import {
   X,
   Search,
   Calendar,
-  User,
   Shield,
   Upload,
 } from "lucide-react";
@@ -38,7 +37,7 @@ import {
 import { toast } from "sonner";
 
 // ------------------------------------------------------------------
-//  STATIC DATA
+// Types
 // ------------------------------------------------------------------
 interface Driver {
   id: number;
@@ -57,6 +56,9 @@ interface Vehicle {
   photo?: string;
 }
 
+// ------------------------------------------------------------------
+// Mock Data
+// ------------------------------------------------------------------
 const mockDrivers: Driver[] = [
   { id: 1, name: "Ali Ben Salah", photo: "https://randomuser.me/api/portraits/men/32.jpg" },
   { id: 2, name: "Sami Trabelsi", photo: "https://randomuser.me/api/portraits/men/45.jpg" },
@@ -100,7 +102,7 @@ const initialVehicles: Vehicle[] = [
     currentDriverId: 2,
     lastUsed: "2025-11-11",
   },
-  // Add more for pagination demo
+  // Additional vehicles for pagination demo
   ...Array.from({ length: 16 }, (_, i) => ({
     id: `V${i + 5}`,
     name: `Vehicle ${i + 5}`,
@@ -112,6 +114,9 @@ const initialVehicles: Vehicle[] = [
   })),
 ];
 
+// ------------------------------------------------------------------
+// Component
+// ------------------------------------------------------------------
 export default function VehicleManagement() {
   const [vehicles, setVehicles] = useState<Vehicle[]>(initialVehicles);
   const [searchTerm, setSearchTerm] = useState("");
@@ -128,13 +133,14 @@ export default function VehicleManagement() {
     photo: "",
   });
 
-  const itemsPerPage = 10;
-  const totalPages = Math.ceil(vehicles.length / itemsPerPage);
+  const itemsPerPage = 6;
 
+  // ------------------------------------------------------------------
+  // Filtered & Paginated Vehicles
+  // ------------------------------------------------------------------
   const filteredVehicles = useMemo(() => {
     return vehicles.filter((v) => {
-      const driver = mockDrivers.find(d => d.id === v.currentDriverId);
-      const driverName = driver?.name.toLowerCase() || "";
+      const driverName = mockDrivers.find(d => d.id === v.currentDriverId)?.name.toLowerCase() || "";
       return (
         v.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         v.plate.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -143,6 +149,8 @@ export default function VehicleManagement() {
     });
   }, [vehicles, searchTerm]);
 
+  const totalPages = Math.ceil(filteredVehicles.length / itemsPerPage);
+
   const paginatedVehicles = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
     return filteredVehicles.slice(start, start + itemsPerPage);
@@ -150,6 +158,9 @@ export default function VehicleManagement() {
 
   const getDriver = (id?: number) => mockDrivers.find(d => d.id === id);
 
+  // ------------------------------------------------------------------
+  // Handlers
+  // ------------------------------------------------------------------
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -220,15 +231,7 @@ export default function VehicleManagement() {
       setVehicles(prev =>
         prev.map(v =>
           v.id === selectedVehicle.id
-            ? {
-                ...v,
-                name: formData.name,
-                type: formData.type,
-                plate: formData.plate,
-                status: formData.status,
-                currentDriverId: formData.currentDriverId ? Number(formData.currentDriverId) : undefined,
-                photo: formData.photo || undefined,
-              }
+            ? { ...v, ...formData, currentDriverId: formData.currentDriverId ? Number(formData.currentDriverId) : undefined }
             : v
         )
       );
@@ -247,6 +250,9 @@ export default function VehicleManagement() {
     return <Badge className="flex items-center gap-1">{icon} {label}</Badge>;
   };
 
+  // ------------------------------------------------------------------
+  // JSX
+  // ------------------------------------------------------------------
   return (
     <div className="p-4 sm:p-6 space-y-6">
       <div className="max-w-7xl mx-auto">
@@ -254,8 +260,7 @@ export default function VehicleManagement() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2">
-              <Truck className="w-6 h-6" />
-              Vehicle Management
+              <Truck className="w-6 h-6" /> Vehicle Management
             </h1>
             <p className="text-sm mt-1">Manage fleet vehicles and assignments</p>
           </div>
@@ -264,50 +269,13 @@ export default function VehicleManagement() {
           </Button>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-sm mb-1">Total</p>
-              <p className="text-3xl font-bold">{vehicles.length}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-sm mb-1">Available</p>
-              <p className="text-3xl font-bold">
-                {vehicles.filter(v => v.status === "Available").length}
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-sm mb-1">In Use</p>
-              <p className="text-3xl font-bold">
-                {vehicles.filter(v => v.status === "In Use").length}
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-sm mb-1">Maintenance</p>
-              <p className="text-3xl font-bold">
-                {vehicles.filter(v => v.status === "Maintenance").length}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
         {/* Search */}
         <div className="relative max-w-md mb-6">
           <Search className="absolute left-3 top-3 w-4 h-4" />
           <Input
             placeholder="Search by name, plate, or driver..."
             value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              setCurrentPage(1);
-            }}
+            onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
             className="pl-10"
           />
         </div>
@@ -321,31 +289,24 @@ export default function VehicleManagement() {
               </CardContent>
             </Card>
           ) : (
-            paginatedVehicles.map((vehicle) => {
+            paginatedVehicles.map(vehicle => {
               const driver = getDriver(vehicle.currentDriverId);
               return (
                 <Card key={vehicle.id} className="overflow-hidden">
                   <div className="aspect-video relative">
                     {vehicle.photo ? (
-                      <img
-                        src={vehicle.photo}
-                        alt={vehicle.name}
-                        className="w-full h-full object-cover"
-                      />
+                      <img src={vehicle.photo} alt={vehicle.name} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full bg-muted flex items-center justify-center">
                         <Truck className="w-12 h-12 text-muted-foreground" />
                       </div>
                     )}
-                    <div className="absolute top-2 right-2">
-                      {getStatusBadge(vehicle.status)}
-                    </div>
+                    <div className="absolute top-2 right-2">{getStatusBadge(vehicle.status)}</div>
                   </div>
                   <CardContent className="pt-4">
                     <h3 className="font-bold text-lg">{vehicle.name}</h3>
                     <p className="text-sm font-medium">{vehicle.plate}</p>
                     <p className="text-xs text-muted-foreground mt-1">{vehicle.type}</p>
-
                     {driver && (
                       <div className="flex items-center gap-2 mt-3">
                         <Avatar className="w-8 h-8">
@@ -355,23 +316,16 @@ export default function VehicleManagement() {
                         <span className="text-sm font-medium">{driver.name}</span>
                       </div>
                     )}
-
                     {vehicle.lastUsed && (
                       <p className="text-xs flex items-center gap-1 mt-2 text-muted-foreground">
-                        <Calendar className="w-3 h-3" />
-                        {vehicle.lastUsed}
+                        <Calendar className="w-3 h-3" /> {vehicle.lastUsed}
                       </p>
                     )}
-
                     <div className="flex justify-end gap-1 mt-4">
                       <Button size="icon" variant="ghost" onClick={() => handleEdit(vehicle)}>
                         <Edit2 className="w-4 h-4" />
                       </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => handleDelete(vehicle.id)}
-                      >
+                      <Button size="icon" variant="ghost" onClick={() => handleDelete(vehicle.id)}>
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
@@ -392,6 +346,7 @@ export default function VehicleManagement() {
                   className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
                 />
               </PaginationItem>
+
               {Array.from({ length: totalPages }, (_, i) => (
                 <PaginationItem key={i + 1}>
                   <PaginationLink
@@ -403,6 +358,7 @@ export default function VehicleManagement() {
                   </PaginationLink>
                 </PaginationItem>
               ))}
+
               <PaginationItem>
                 <PaginationNext
                   onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
@@ -421,6 +377,7 @@ export default function VehicleManagement() {
             <DialogTitle>{modalMode === "create" ? "Add Vehicle" : "Edit Vehicle"}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Photo */}
             <div className="space-y-2">
               <Label>Photo</Label>
               <div className="flex items-center gap-4">
@@ -449,6 +406,7 @@ export default function VehicleManagement() {
               </div>
             </div>
 
+            {/* Name, Type, Plate */}
             {["name", "type", "plate"].map((field) => (
               <div key={field} className="space-y-2">
                 <Label htmlFor={field}>
@@ -465,6 +423,7 @@ export default function VehicleManagement() {
               </div>
             ))}
 
+            {/* Status */}
             <div className="space-y-2">
               <Label>Status</Label>
               <select
@@ -478,6 +437,7 @@ export default function VehicleManagement() {
               </select>
             </div>
 
+            {/* Driver */}
             <div className="space-y-2">
               <Label>Current Driver</Label>
               <select

@@ -118,7 +118,7 @@ function Navbar() {
                         key={item.title}
                         open={isOpen}
                         onOpenChange={() => toggleItem(itemKey)}
-                        className="group/collapsible cursor-pointer mt-1.5"
+                        className="group/collapsible cursor-pointer mt-1.5"AV
                       >
                         <SidebarMenuItem>
                           <CollapsibleTrigger asChild>

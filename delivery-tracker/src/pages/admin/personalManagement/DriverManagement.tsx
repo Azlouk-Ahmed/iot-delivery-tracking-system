@@ -13,6 +13,7 @@ import {
   Shield,
   Upload,
 } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -34,6 +35,7 @@ import {
   TableCaption,
 } from "@/components/ui/table";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+
 import {
   Select,
   SelectContent,
@@ -41,14 +43,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
 import { toast } from "sonner";
+
+// IMPORT PAGINATION
+import {
+  Pagination,
+  PaginationContent,
+  PaginationPrevious,
+  PaginationNext,
+  PaginationItem,
+  PaginationLink,
+} from "@/components/ui/pagination";
 
 interface Driver {
   id: number;
   name: string;
   email: string;
   phone: string;
-  vehicleId: string; // now references vehicle ID
+  vehicleId: string;
   status: "Active" | "Inactive";
   createdAt: string;
   photo?: string;
@@ -60,7 +73,6 @@ interface Vehicle {
   type: string;
 }
 
-// Mock vehicles
 const availableVehicles: Vehicle[] = [
   { id: "V1", name: "Truck A", type: "Heavy Truck" },
   { id: "V2", name: "Van B", type: "Delivery Van" },
@@ -89,12 +101,72 @@ export default function DriverManagement() {
       status: "Inactive",
       createdAt: "2024-03-12",
     },
+    {
+      id: 3,
+      name: "Sami Trabelsi",
+      email: "sami@example.com",
+      phone: "+21621000000",
+      vehicleId: "V2",
+      status: "Inactive",
+      createdAt: "2024-03-12",
+    },
+    {
+      id: 4,
+      name: "Sami Trabelsi",
+      email: "sami@example.com",
+      phone: "+21621000000",
+      vehicleId: "V2",
+      status: "Inactive",
+      createdAt: "2024-03-12",
+    },
+    {
+      id: 5,
+      name: "Sami Trabelsi",
+      email: "sami@example.com",
+      phone: "+21621000000",
+      vehicleId: "V2",
+      status: "Inactive",
+      createdAt: "2024-03-12",
+    },
+    {
+      id: 6,
+      name: "Sami Trabelsi",
+      email: "sami@example.com",
+      phone: "+21621000000",
+      vehicleId: "V2",
+      status: "Inactive",
+      createdAt: "2024-03-12",
+    },
+    
   ]);
 
   const [searchTerm, setSearchTerm] = useState("");
+
+  // PAGINATION STATE
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  const filteredDrivers = drivers.filter(
+    (d) =>
+      d.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      d.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      availableVehicles
+        .find((v) => v.id === d.vehicleId)
+        ?.name.toLowerCase()
+        .includes(searchTerm.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filteredDrivers.length / itemsPerPage);
+
+  const paginatedDrivers = filteredDrivers.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState<"create" | "edit">("create");
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -103,13 +175,6 @@ export default function DriverManagement() {
     status: "Active" as const,
     photo: "",
   });
-
-  const filteredDrivers = drivers.filter(
-    (d) =>
-      d.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      d.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      availableVehicles.find(v => v.id === d.vehicleId)?.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -181,15 +246,7 @@ export default function DriverManagement() {
       setDrivers((prev) =>
         prev.map((d) =>
           d.id === selectedDriver.id
-            ? {
-                ...d,
-                name: formData.name,
-                email: formData.email,
-                phone: formData.phone,
-                vehicleId: formData.vehicleId,
-                status: formData.status,
-                photo: formData.photo || undefined,
-              }
+            ? { ...d, ...formData, photo: formData.photo || undefined }
             : d
         )
       );
@@ -217,7 +274,7 @@ export default function DriverManagement() {
   };
 
   const getVehicleName = (vehicleId: string) => {
-    return availableVehicles.find(v => v.id === vehicleId)?.name || "—";
+    return availableVehicles.find((v) => v.id === vehicleId)?.name || "—";
   };
 
   return (
@@ -229,56 +286,11 @@ export default function DriverManagement() {
             <Truck className="w-6 h-6" />
             Driver Management
           </h1>
-          <p className="text-sm">
-            Manage driver accounts and their vehicles
-          </p>
+          <p className="text-sm">Manage driver accounts and their vehicles</p>
         </div>
         <Button onClick={handleCreate}>
           <Plus className="w-4 h-4 mr-2" /> Add Driver
         </Button>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="p-6 border rounded-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm">Total Drivers</p>
-              <p className="text-3xl font-bold">{drivers.length}</p>
-            </div>
-            <div className="p-3 rounded-full">
-              <Truck className="w-6 h-6" />
-            </div>
-          </div>
-        </div>
-
-        <div className="p-6 border rounded-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm">Active Drivers</p>
-              <p className="text-3xl font-bold">
-                {drivers.filter((d) => d.status === "Active").length}
-              </p>
-            </div>
-            <div className="p-3 rounded-full">
-              <User className="w-6 h-6" />
-            </div>
-          </div>
-        </div>
-
-        <div className="p-6 border rounded-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm">Inactive Drivers</p>
-              <p className="text-3xl font-bold">
-                {drivers.filter((d) => d.status === "Inactive").length}
-              </p>
-            </div>
-            <div className="p-3 rounded-full">
-              <Shield className="w-6 h-6" />
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Search */}
@@ -287,7 +299,10 @@ export default function DriverManagement() {
         <Input
           placeholder="Search by name, email, or vehicle..."
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={(e) => {
+            setCurrentPage(1); // reset pagination when searching
+            setSearchTerm(e.target.value);
+          }}
           className="pl-10"
         />
       </div>
@@ -307,19 +322,20 @@ export default function DriverManagement() {
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
+
           <TableBody>
-            {filteredDrivers.length === 0 ? (
+            {paginatedDrivers.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} className="text-center py-10">
                   No drivers found
                 </TableCell>
               </TableRow>
             ) : (
-              filteredDrivers.map((driver) => (
+              paginatedDrivers.map((driver) => (
                 <TableRow key={driver.id}>
                   <TableCell>
                     <Avatar className="w-10 h-10 ring-2 ring-border">
-                      <AvatarImage src={driver.photo} alt={driver.name} />
+                      <AvatarImage src={driver.photo} />
                       <AvatarFallback>
                         {driver.name.charAt(0).toUpperCase()}
                       </AvatarFallback>
@@ -336,11 +352,7 @@ export default function DriverManagement() {
                       <Button size="icon" variant="ghost" onClick={() => handleEdit(driver)}>
                         <Edit2 className="w-4 h-4" />
                       </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => handleDelete(driver.id)}
-                      >
+                      <Button size="icon" variant="ghost" onClick={() => handleDelete(driver.id)}>
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
@@ -349,35 +361,69 @@ export default function DriverManagement() {
               ))
             )}
           </TableBody>
+
           <TableCaption>
-            Showing {filteredDrivers.length} driver(s)
+            Showing {paginatedDrivers.length} of {filteredDrivers.length} driver(s)
           </TableCaption>
         </Table>
       </div>
+
+      {/* PAGINATION */}
+      {totalPages > 1 && (
+        <Pagination className="mt-4">
+          <PaginationPrevious
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+          />
+
+          <PaginationContent>
+            {Array.from({ length: totalPages }).map((_, i) => (
+              <PaginationItem key={i}>
+                <PaginationLink
+                  isActive={currentPage === i + 1}
+                  onClick={() => setCurrentPage(i + 1)}
+                >
+                  {i + 1}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+          </PaginationContent>
+
+          <PaginationNext
+            onClick={() =>
+              setCurrentPage((p) => Math.min(totalPages, p + 1))
+            }
+          />
+        </Pagination>
+      )}
 
       {/* Modal */}
       <Dialog open={showModal} onOpenChange={setShowModal}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>{modalMode === "create" ? "Add Driver" : "Edit Driver"}</DialogTitle>
+            <DialogTitle>
+              {modalMode === "create" ? "Add Driver" : "Edit Driver"}
+            </DialogTitle>
           </DialogHeader>
+
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Photo */}
+            {/* PHOTO */}
             <div className="space-y-2">
               <Label>Photo</Label>
               <div className="flex items-center gap-4">
                 <Avatar className="w-16 h-16 ring-2 ring-border">
                   <AvatarImage src={formData.photo} />
                   <AvatarFallback className="text-xl">
-                    {formData.name.charAt(0).toUpperCase() || "?"}
+                    {formData.name.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
+
                 <label className="cursor-pointer">
                   <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
                   <div className="px-4 py-2 border rounded-md hover:bg-accent flex items-center gap-1 text-sm">
                     <Upload className="w-3.5 h-3.5" /> Choose
                   </div>
                 </label>
+
                 {formData.photo && (
                   <button
                     type="button"
@@ -390,7 +436,7 @@ export default function DriverManagement() {
               </div>
             </div>
 
-            {/* Name, Email, Phone */}
+            {/* FORM FIELDS */}
             {["name", "email", "phone"].map((field) => (
               <div key={field} className="space-y-2">
                 <Label htmlFor={field}>
@@ -403,17 +449,18 @@ export default function DriverManagement() {
                   value={formData[field as keyof typeof formData]}
                   onChange={handleInputChange}
                   required
-                  placeholder={field === "phone" ? "+216..." : ""}
                 />
               </div>
             ))}
 
-            {/* Vehicle Select */}
+            {/* VEHICLE */}
             <div className="space-y-2">
-              <Label htmlFor="vehicleId">Vehicle *</Label>
+              <Label>Vehicle *</Label>
               <Select
                 value={formData.vehicleId}
-                onValueChange={(value) => setFormData({ ...formData, vehicleId: value })}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, vehicleId: value })
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select a vehicle" />
@@ -428,9 +475,9 @@ export default function DriverManagement() {
               </Select>
             </div>
 
-            {/* Status */}
+            {/* STATUS */}
             <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
+              <Label>Status</Label>
               <Select
                 value={formData.status}
                 onValueChange={(value: "Active" | "Inactive") =>
@@ -451,8 +498,10 @@ export default function DriverManagement() {
               <Button type="button" variant="outline" onClick={() => setShowModal(false)}>
                 <X className="w-4 h-4 mr-1" /> Cancel
               </Button>
+
               <Button type="submit">
-                <Check className="w-4 h-4 mr-1" /> {modalMode === "create" ? "Add" : "Update"}
+                <Check className="w-4 h-4 mr-1" />
+                {modalMode === "create" ? "Add" : "Update"}
               </Button>
             </DialogFooter>
           </form>
