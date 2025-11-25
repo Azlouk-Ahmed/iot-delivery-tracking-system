@@ -6,6 +6,7 @@ import { DataTable, type Company } from "@/components/base/companies-table";
 import { columns } from "@/components/base/companies-table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuthContext } from "@/hooks/useAuthContext";
+import AllCompanies from "./AllCompanies";
 
 const companies: Company[] = [
   {
@@ -168,10 +169,7 @@ function Dashboard() {
         <ChartBarDefault />
         <ChartRadarGridCircleNoLines />
       </div>
-      <div className="p-10">
-        <h1 className="text-2xl font-semibold mb-6">Companies</h1>
-        <DataTable columns={columns} data={companies} />
-      </div>
+      <AllCompanies />
     </div>
   );
 }

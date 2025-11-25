@@ -59,7 +59,7 @@ export const menuConfig: MenuConfig = {
           icon: Package,
           subItems: [
             { title: "Tous Livraison", url: "/deliveries/all", icon: List },
-            { title: "Manage", url: "/deliveries/manage", icon: Settings },
+            { title: "Track Delivery", url: "/deliveries/track", icon: Settings },
           ],
         },
         {
@@ -85,7 +85,6 @@ export const menuConfig: MenuConfig = {
     {
       label: "Analyse & Paramètres",
       items: [
-        { title: "Statistiques", url: "/stats", icon: BarChart },
         { title: "Paramètres système", url: "/settings", icon: Settings },
       ],
     },
@@ -153,6 +152,13 @@ export const menuConfig: MenuConfig = {
         { title: "Alerts", url: "/alerts", icon: Bell },
       ],
     },
+
+    {
+      label: "Analyse & Paramètres",
+      items: [
+        { title: "Paramètres système", url: "/settings", icon: Settings },
+      ],
+    },
   ],
   driver: [
     {
@@ -181,6 +187,12 @@ export const menuConfig: MenuConfig = {
       label: "Compte",
       items: [{ title: "Paramètres", url: "/settings", icon: Settings }],
     },
+    {
+      label: "Analyse & Paramètres",
+      items: [
+        { title: "Paramètres système", url: "/settings", icon: Settings },
+      ],
+    },
   ],
   user: [
     {
@@ -207,6 +219,12 @@ export const menuConfig: MenuConfig = {
     {
       label: "Account",
       items: [{ title: "Settings", url: "/settings", icon: Settings }],
+    },
+    {
+      label: "Analyse & Paramètres",
+      items: [
+        { title: "Paramètres système", url: "/settings", icon: Settings },
+      ],
     },
   ],
 };

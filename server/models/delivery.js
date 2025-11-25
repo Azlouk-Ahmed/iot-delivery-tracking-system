@@ -37,11 +37,10 @@ const deliverySchema = new mongoose.Schema(
     products: [
       {
         product: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Product",
+          type:String,
           required: true,
         },
-        quantity: {
+        qty: {
           type: Number,
           required: true,
           min: 1,

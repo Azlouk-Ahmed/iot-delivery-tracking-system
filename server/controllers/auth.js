@@ -142,6 +142,40 @@ const login = async (req, res) => {
   }
 };
 
+const getAll = async (req, res) => {
+  try {
+    const users = await User.find({role : "user"}).select("-password -refreshTokens -resetPasswordToken -resetPasswordExpires");
+    res.status(200).json({
+      success: true,
+      users,
+    });
+  } catch (error) {
+    console.error("Get all users error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch users",
+      error: error.message,
+    });
+  }
+}
+const getAdmins = async (req, res) => {
+  try {
+    const users = await User.find({role : "admin"}).select("-password -refreshTokens -resetPasswordToken -resetPasswordExpires");
+    console.log("Fetched admins:", users);
+    res.status(200).json({
+      success: true,
+      users,
+    });
+  } catch (error) {
+    console.error("Get all users error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch users",
+      error: error.message,
+    });
+  }
+}
+
 const googleCallback = async (req, res) => {
   try {
     const user = req.user;
@@ -372,6 +406,88 @@ const resetPassword = async (req, res) => {
   }
 };
 
+const getUserRegistrationStats = async (req, res) => {
+  try {
+    // Get current date and date 6 months ago
+    const now = new Date();
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+    sixMonthsAgo.setDate(1); // Start from the 1st of that month
+    sixMonthsAgo.setHours(0, 0, 0, 0);
+
+    // Aggregate users by month and role
+    const userStats = await User.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: sixMonthsAgo }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            year: { $year: "$createdAt" },
+            month: { $month: "$createdAt" },
+            role: "$role"
+          },
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $sort: { "_id.year": 1, "_id.month": 1 }
+      }
+    ]);
+
+    // Create array of last 6 months
+    const monthNames = [
+      "January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"
+    ];
+
+    const chartData = [];
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date();
+      date.setMonth(date.getMonth() - i);
+      const year = date.getFullYear();
+      const month = date.getMonth() + 1;
+
+      // Get stats for users and drivers for this month
+      const userCount = userStats
+        .filter(s => 
+          s._id.year === year && 
+          s._id.month === month && 
+          s._id.role === 'user'
+        )
+        .reduce((sum, s) => sum + s.count, 0);
+
+      const driverCount = userStats
+        .filter(s => 
+          s._id.year === year && 
+          s._id.month === month && 
+          s._id.role === 'driver'
+        )
+        .reduce((sum, s) => sum + s.count, 0);
+
+      chartData.push({
+        month: monthNames[month - 1],
+        users: userCount,
+        drivers: driverCount
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: chartData
+    });
+  } catch (error) {
+    console.error("Get user stats error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch user statistics",
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   signup,
   login,
@@ -383,4 +499,7 @@ module.exports = {
   logoutAll,
   forgotPassword,
   resetPassword,
+  getAll,
+  getAdmins,
+  getUserRegistrationStats
 };

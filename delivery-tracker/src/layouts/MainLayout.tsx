@@ -8,7 +8,7 @@ import { Toaster } from "@/components/ui/sonner";
 const MainLayout: React.FC = () => {
   return (
     <SidebarProvider>
-      <Toaster position="top-right" expand richColors />
+      <Toaster />
       <Navbar />
       <div style={{ flex: 1, padding: "1rem" }}>
         <SidebarTrigger />

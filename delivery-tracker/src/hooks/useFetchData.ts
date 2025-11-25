@@ -28,6 +28,7 @@ const useFetch = <T = any>(url: string, options: UseFetchOptions = {}): UseFetch
             setData(response.data);
         } catch (err: any) {
             setError(err.response?.data?.message || err.message);
+            console.error('Error fetching data:', err);
         } finally {
             setLoading(false);
         }

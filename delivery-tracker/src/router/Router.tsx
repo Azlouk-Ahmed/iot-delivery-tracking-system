@@ -30,7 +30,10 @@ const Trajectories = React.lazy(
   () => import("../pages/super admin/Trajectories")
 );
 const Dashboard = React.lazy(() => import("../pages/super admin/Dashboard"));
+const Delivery = React.lazy(() => import("../pages/shared/Delivery"));
+const TrackOrder = React.lazy(() => import("../pages/shared/TrackOrder"));
 const MainLayout = React.lazy(() => import("../layouts/MainLayout"));
+
 const OrdersOngoing = React.lazy(() => import("@/pages/client/ordersOngoing"));
 const OrdersCompleted = React.lazy(
   () => import("@/pages/client/ordersCompleted")
@@ -98,6 +101,7 @@ const InServiceVehicles = React.lazy(
   () => import("@/pages/admin/vehicle/InServiceVehicles")
 );
 const AlertsPage = React.lazy(() => import("@/pages/admin/AlertsPanel"));
+const Settings = React.lazy(() => import("@/pages/shared/Settings"));
 
 const Router = () => {
   const { user } = useAuthContext();
@@ -111,6 +115,14 @@ const Router = () => {
           path: "/",
           element: <MainLayout />,
           children: [
+            {
+              path: "/settings",
+              element: (
+                <React.Suspense fallback={<div>Loading...</div>}>
+                  <Settings />
+                </React.Suspense>
+              ),
+            },
             ...(role === "super_admin"
               ? [
                   {
@@ -126,6 +138,22 @@ const Router = () => {
                     element: (
                       <React.Suspense fallback={<div>Loading...</div>}>
                         <AllCompanies />
+                      </React.Suspense>
+                    ),
+                  },
+                  {
+                    path: "deliveries/all",
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <Delivery />
+                      </React.Suspense>
+                    ),
+                  },
+                  {
+                    path: "deliveries/track",
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <TrackOrder />
                       </React.Suspense>
                     ),
                   },
@@ -188,9 +216,8 @@ const Router = () => {
                 ]
               : role === "admin"
               ? [
-                  
                   {
-                    index: true, 
+                    index: true,
                     element: (
                       <React.Suspense fallback={<div>Loading...</div>}>
                         <AdminDashboard />
@@ -213,9 +240,9 @@ const Router = () => {
                       </React.Suspense>
                     ),
                   },
-                  
+
                   {
-                    path: "personnel/drivers", 
+                    path: "personnel/drivers",
                     element: (
                       <React.Suspense fallback={<div>Loading...</div>}>
                         <DriverManagement />
@@ -238,7 +265,7 @@ const Router = () => {
                       </React.Suspense>
                     ),
                   },
-                  
+
                   {
                     path: "deliveries/add",
                     element: (

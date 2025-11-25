@@ -1,4 +1,4 @@
-const {addAdminToCompany, createCompany, getCompanyAdmins, getCompanyById, getCompanyVehicles, removeAdminFromCompany} = require("../controllers/company");
+const {addAdminToCompany, createCompany, getCompanyAdmins, getCompanyVehicles, removeAdminFromCompany, getAll} = require("../controllers/company");
 const express = require("express");
 
 
@@ -11,8 +11,8 @@ router.post(
 
 
 router.get(
-  "/:companyId",
-  getCompanyById
+  "/all",
+  getAll
 );
 
 router.get(
