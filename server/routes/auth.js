@@ -18,6 +18,9 @@ const CLIENT_URL = process.env.CLIENT_URL;
 router.post("/signup", validateSignup, authController.signup);
 
 router.post("/login", validateLogin, authController.login);
+router.get("/stats", authController.getUserRegistrationStats);
+router.get("/all", authController.getAll);
+router.get("/admins", authController.getAdmins);
 
 router.get(
   "/google",

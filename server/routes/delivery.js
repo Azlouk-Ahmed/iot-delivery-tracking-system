@@ -1,4 +1,4 @@
-const { createDelivery, deleteDelivery, getAllDeliveries, getDeliveryById, updateDelivery, updateDeliveryStatus } = require("../controllers/delivery");
+const { createDelivery, deleteDelivery, getAllDeliveries, getDeliveryById, updateDelivery, updateDeliveryStatus, getDeliveryStats } = require("../controllers/delivery");
 
 const express = require("express");
 
@@ -7,6 +7,7 @@ const router = express.Router();
 
 
 router.post("/", createDelivery);
+router.get("/stats", getDeliveryStats);
 
 
 router.get("/", getAllDeliveries);

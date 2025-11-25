@@ -79,6 +79,25 @@ exports.getAllVehicles = async (req, res) => {
     });
   }
 };
+exports.getAll = async (req, res) => {
+  try {
+
+    const vehicles = await Vehicle.find()
+      .populate('companyId')
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: vehicles.length,
+      data: vehicles
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
 
 
 exports.getVehicleById = async (req, res) => {

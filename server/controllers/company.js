@@ -103,6 +103,16 @@ const getCompanyById = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+const getAll = async (req, res) => {
+  try {
+    const company = await Company.find({}).populate(
+      "admins"
+    );
+    res.status(200).json(company);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
 module.exports = {
   createCompany,
@@ -110,5 +120,5 @@ module.exports = {
   getCompanyAdmins,
   addAdminToCompany,
   removeAdminFromCompany,
-  getCompanyById,
+  getAll,
 };
