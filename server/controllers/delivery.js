@@ -1,8 +1,44 @@
+const { default: mongoose } = require("mongoose");
 const Delivery = require("../models/delivery");
 
  const createDelivery = async (req, res) => {
   try {
-    const delivery = new Delivery(req.body);
+    const {
+      user,
+      email,
+      company,
+      vehicleId,
+      status,
+      products,
+    } = req.body;
+
+    const userId = new mongoose.Types.ObjectId(user);
+    const companyId = new mongoose.Types.ObjectId(company);
+    const vehicleObjectId = new mongoose.Types.ObjectId(vehicleId);
+
+     const cleanedProducts = (products || [])
+      .filter((p) => p.product?.trim() !== "")
+      .map((p) => ({
+        product: p.product.trim(),
+        qty: Number(p.qty),
+        price: Number(p.price),
+      }));
+
+    if (!cleanedProducts.length) {
+      return res.status(400).json({
+        success: false,
+        message: "At least one product is required",
+      });
+    }
+
+    const delivery = new Delivery({
+      user: userId,
+      email: email.toLowerCase().trim(),
+      company: companyId,
+      vehicleId: vehicleObjectId,
+      status,
+      products: cleanedProducts,
+    });
     await delivery.save();
     res.status(201).json({
       success: true,
@@ -10,6 +46,7 @@ const Delivery = require("../models/delivery");
       delivery,
     });
   } catch (error) {
+    console.error("Create delivery error:", error);
     res.status(400).json({ success: false, message: error.message });
   }
 };
@@ -17,6 +54,19 @@ const Delivery = require("../models/delivery");
  const getAllDeliveries = async (req, res) => {
   try {
     const deliveries = await Delivery.find()
+      .populate("user", "name email")
+      .populate("company", "name")
+      .populate("vehicleId", "plateNumber")
+      .populate("products.product", "name price");
+
+    res.status(200).json({ success: true, count: deliveries.length, deliveries });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+ const getAllDeliveriesCompany = async (req, res) => {
+  try {
+    const deliveries = await Delivery.find({ company: req.params.companyId })
       .populate("user", "name email")
       .populate("company", "name")
       .populate("vehicleId", "plateNumber")
@@ -279,5 +329,6 @@ module.exports = {
     updateDelivery,
     deleteDelivery,
     updateDeliveryStatus,
-    getDeliveryStats
+    getDeliveryStats,
+    getAllDeliveriesCompany
 };

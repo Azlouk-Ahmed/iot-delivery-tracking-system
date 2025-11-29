@@ -28,48 +28,66 @@ import { SectionCards } from "@/components/base/OrdersSectionCards";
 import useFetch from "@/hooks/useFetchData";
 import { axiosPublic } from "@/api/axios";
 import { useAuthContext } from "@/hooks/useAuthContext";
+import { toast } from "sonner";
 emailjs.init("5ddo6PQPTT7fIycvW");
 
 function OrdersPage() {
   // Fetch required data
   const {user} = useAuthContext();
-  console.log("Authenticated User:", user);
+  const { data: userData } = useFetch("/auth/admin-data", { immediate: true });
   const { data: companiesData } = useFetch("/companies/all", { immediate: true });
   const { data: usersData } = useFetch("/auth/all", { immediate: true });
   const { data: vehiclesData } = useFetch("/vehicle/all", { immediate: true });
-  const { data: deliveriesData, refetch: refetchDeliveries } = useFetch("/delivery", { immediate: true });
-
+  const { data: vehiclesDataAdmin } = useFetch(`/vehicle/admin/${userData?.companies?._id}`, { immediate: true });
+  const { data: deliveriesData, refetch: refetchDeliveries } = useFetch("/delivery", { immediate: true, });
+  const { data: deliveriesDataAdmin } = useFetch(`/delivery/company/${userData?.companies?._id}`, { immediate: true });
+  console.log("deliveriesDataAdmin",deliveriesDataAdmin);
   const [orders, setOrders] = useState<Order[]>([]);
   const [showDelivered, setShowDelivered] = useState(true);
 
   // Form state
   const [formData, setFormData] = useState({
     userId: "",
-    companyId: "",
+    companyId:"",
     vehicleId: "",
     status: "pending" as const,
   });
+
+  useEffect(() => {
+    if(userData?.companies?._id){
+      setFormData((prev) => ({ ...prev, companyId: userData.companies._id }));
+    }
+  }, [userData]);
 
   const [products, setProducts] = useState([
     { product: "", qty: 1, price: 0 },
   ]);
 
-  // Map deliveries from API to Order type for table
-  useEffect(() => {
-    if (deliveriesData?.success && deliveriesData.deliveries) {
-      const mappedOrders: Order[] = deliveriesData.deliveries.map((d: any) => ({
-        id: d._id,
-        email: d.user?.email || "N/A",
-        user: d.user?.name || "Unknown",
-        company: d.company?.name || "Unknown",
-        vehicleId: d.vehicleId?.plateNumber || d.vehicleId?._id || "N/A",
-        status: d.status,
-        products: d.products || [],
-        date: Date.now(),
-      }));
-      setOrders(mappedOrders);
-    }
-  }, [deliveriesData]);
+useEffect(() => {
+  let sourceData = null;
+
+  if (!userData?.companies?._id && deliveriesData?.success) {
+    sourceData = deliveriesData.deliveries;
+  } else if (userData?.companies?._id && deliveriesDataAdmin?.success) {
+    sourceData = deliveriesDataAdmin.deliveries;
+  }
+
+  if (sourceData) {
+    const mappedOrders: Order[] = sourceData.map((d: any) => ({
+      id: d._id,
+      email: d.user?.email || "N/A",
+      user: d.user?.name || "Unknown",
+      company: d.company?.name || "Unknown",
+      vehicleId: d.vehicleId?.plateNumber || d.vehicleId?._id || "N/A",
+      status: d.status,
+      products: d.products || [],
+      date: Date.now(),
+    }));
+
+    setOrders(mappedOrders);
+  }
+}, [deliveriesData, deliveriesDataAdmin, userData]);
+
 
   const filteredOrders = showDelivered
     ? orders
@@ -97,36 +115,58 @@ function OrdersPage() {
 
 const handleSubmit = async () => {
   try {
+    // Validate required fields
+    if (!formData.userId) {
+      toast.error("Please select a user");
+      return;
+    }
+
+    if (!formData.companyId) {
+      toast.error("Please select a company");
+      return;
+    }
+
+    if (!formData.vehicleId) {
+      toast.error("Please select a vehicle");
+      return;
+    }
+
+    const filteredProducts = products
+      .filter((p) => p.product.trim() !== "")
+      .map((p) => ({
+        product: p.product,
+        qty: p.qty,
+        price: p.price,
+      }));
+
+    if (filteredProducts.length === 0) {
+      toast.error("Please add at least one product");
+      return;
+    }
+
     const payload = {
-      user: formData.userId,        
+      user: formData.userId,
       email:
         usersData?.users.find((u: any) => u._id === formData.userId)?.email ||
         "",
-      company: formData.companyId, 
+      company: formData.companyId,
       vehicleId: formData.vehicleId,
       status: formData.status,
-      products: products
-        .filter((p) => p.product.trim() !== "")
-        .map((p) => ({
-          product: p.product,
-          qty: p.qty,
-          price: p.price,
-        })),
+      products: filteredProducts,
     };
 
-    if (payload.products.length === 0) {
-      alert("Please add at least one product");
-      return;
-    }
+    console.log("Payload being sent:", payload);
 
     // 1️⃣ Create Delivery
     const response = await axiosPublic.post("/delivery", payload);
     console.log("Delivery created:", response.data);
 
-    // 2️⃣ Send Email Notification (EmailJS)
+    // 2️⃣ Send Email Notification
     await emailjs.send("service_ztho70b", "template_ybf67te", {
       title: "Your Order Has Been Successfully Placed",
-      name: usersData?.users.find((u: any) => u._id === formData.userId)?.name || "Customer",
+      name:
+        usersData?.users.find((u: any) => u._id === formData.userId)?.name ||
+        "Customer",
       time: new Date().toLocaleString(),
       message:
         "Your delivery request has been received. You will be able to track your order as soon as the driver updates the status to 'shipping'.",
@@ -135,22 +175,25 @@ const handleSubmit = async () => {
 
     console.log("Email sent successfully");
 
-    // 3️⃣ Refetch deliveries to update the list
+    // 3️⃣ Refetch list
     await refetchDeliveries();
 
     // 4️⃣ Reset form
     setFormData({
       userId: "",
-      companyId: "",
+      companyId: userData?.companies?._id || "",
       vehicleId: "",
       status: "pending",
     });
     setProducts([{ product: "", qty: 1, price: 0 }]);
+
+    toast.success("Delivery created successfully!");
   } catch (error: any) {
     console.error("Error creating delivery:", error);
-    alert(error.response?.data?.message || "Failed to create delivery");
+    toast.error(error.response?.data?.message || "Failed to create delivery");
   }
 };
+
 
 
   return (
@@ -246,14 +289,22 @@ const handleSubmit = async () => {
                     <SelectTrigger>
                       <SelectValue placeholder="Select vehicle" />
                     </SelectTrigger>
-                    <SelectContent>
+                    {user?.role === "super_admin" &&<SelectContent>
                       {vehiclesData?.success &&
                         vehiclesData.data.map((vehicle: any) => (
                           <SelectItem key={vehicle._id} value={vehicle._id}>
                             {vehicle.model} ({vehicle.plateNumber})
                           </SelectItem>
                         ))}
-                    </SelectContent>
+                    </SelectContent>}
+                    {user?.role === "admin" &&<SelectContent>
+                      {vehiclesDataAdmin?.success &&
+                        vehiclesDataAdmin.data.map((vehicle: any) => (
+                          <SelectItem key={vehicle._id} value={vehicle._id}>
+                            {vehicle.model} ({vehicle.plateNumber})
+                          </SelectItem>
+                        ))}
+                    </SelectContent>}
                   </Select>
                 </div>
 

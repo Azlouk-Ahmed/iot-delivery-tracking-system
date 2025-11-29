@@ -122,16 +122,7 @@ export const menuConfig: MenuConfig = {
           subItems: [
             { title: "All", url: "/deliveries/all", icon: List },
             { title: "In Progress", url: "/deliveries/ongoing", icon: Truck },
-            {
-              title: "Delivered",
-              url: "/deliveries/completed",
-              icon: CheckCircle,
-            },
-            {
-              title: "Scheduled",
-              url: "/deliveries/scheduled",
-              icon: Calendar,
-            },
+           
           ],
         },
         {

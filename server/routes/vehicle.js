@@ -7,6 +7,7 @@ router.post('/', vehicleController.createVehicle);
 
 
 router.get('/all', vehicleController.getAll);
+router.get('/admin/:companyId', vehicleController.getAllVehiclesAdmin);
 router.get('/', vehicleController.getAllVehicles);
 router.get('/:vehicleId', vehicleController.getVehicleById);
 
