@@ -121,7 +121,7 @@ export const menuConfig: MenuConfig = {
           icon: Package,
           subItems: [
             { title: "All", url: "/deliveries/all", icon: List },
-            { title: "In Progress", url: "/deliveries/ongoing", icon: Truck },
+            { title: "Track delivery", url: "/deliveries/ongoing", icon: Truck },
            
           ],
         },
@@ -133,16 +133,6 @@ export const menuConfig: MenuConfig = {
             { title: "All Vehicles", url: "/vehicles/all", icon: List },
             { title: "Available", url: "/vehicles/available", icon: Car },
             { title: "In Service", url: "/vehicles/in-service", icon: Truck },
-          ],
-        },
-        {
-          title: "Drivers",
-          url: "/drivers",
-          icon: Users,
-          subItems: [
-            // { title: "All Drivers", url: "/drivers/all", icon: List },
-            { title: "In Service", url: "/drivers/active", icon: CheckCircle },
-            { title: "Offline", url: "/drivers/offline", icon: XCircle },
           ],
         },
       ],

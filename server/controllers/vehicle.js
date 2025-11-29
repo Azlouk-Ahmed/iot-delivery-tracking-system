@@ -6,6 +6,7 @@ const User = require('../models/user');
 exports.createVehicle = async (req, res) => {
   try {
     const { model, licensePlate, driverId, companyId } = req.body; 
+    console.log("Create Vehicle Request Body:", companyId);
 
     
     const driver = await User.findById(driverId);

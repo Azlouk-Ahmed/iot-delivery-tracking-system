@@ -302,7 +302,7 @@ const Router = () => {
                     path: "deliveries/ongoing",
                     element: (
                       <React.Suspense fallback={<div>Loading...</div>}>
-                        <InProgressDeliveries />
+                        <TrackOrder />
                       </React.Suspense>
                     ),
                   },
