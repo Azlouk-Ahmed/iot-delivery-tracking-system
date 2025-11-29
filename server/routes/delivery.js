@@ -1,6 +1,9 @@
 const { createDelivery, deleteDelivery, getAllDeliveries, getDeliveryById, updateDelivery, updateDeliveryStatus, getDeliveryStats } = require("../controllers/delivery");
 
 const express = require("express");
+const authorizeRoles = require("../middlewares/verifyRoles");
+const ALLOWED_ROLES = require("../config/roles-list");
+const { authenticateToken } = require("../middlewares/auth");
 
 
 const router = express.Router();
@@ -11,6 +14,7 @@ router.get("/stats", getDeliveryStats);
 
 
 router.get("/", getAllDeliveries);
+router.get("/admin",authenticateToken,authorizeRoles([ALLOWED_ROLES.ADMIN]), getAllDeliveries);
 
 
 router.get("/:id", getDeliveryById);

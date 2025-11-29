@@ -44,7 +44,10 @@ io.on("connection", async (socket) => {
   if (role === ALLOWED_ROLES.ADMIN) {
     try {
       logger.info("Socket", `Fetching company for admin ${userId}`);
-      const company = await Company.findOne({ admins: userId });
+      const company = await Company.findOne({ admins: userId.toString() });
+      logger.info("debug", `debugging ====== ${company} - for admin ${userId}`);
+      logger.info("debug", `typeof userId = ${typeof userId}, value = [${userId}]`);
+
 
       if (!company) {
         logger.warn("Socket", `Admin ${name} is not linked to any company`);

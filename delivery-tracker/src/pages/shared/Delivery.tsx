@@ -27,10 +27,13 @@ import { Button } from "@/components/ui/button";
 import { SectionCards } from "@/components/base/OrdersSectionCards";
 import useFetch from "@/hooks/useFetchData";
 import { axiosPublic } from "@/api/axios";
+import { useAuthContext } from "@/hooks/useAuthContext";
 emailjs.init("5ddo6PQPTT7fIycvW");
 
 function OrdersPage() {
   // Fetch required data
+  const {user} = useAuthContext();
+  console.log("Authenticated User:", user);
   const { data: companiesData } = useFetch("/companies/all", { immediate: true });
   const { data: usersData } = useFetch("/auth/all", { immediate: true });
   const { data: vehiclesData } = useFetch("/vehicle/all", { immediate: true });
@@ -213,7 +216,7 @@ const handleSubmit = async () => {
                 </div>
 
                 {/* Company Select */}
-                <div className="grid gap-2">
+                {user?.role === "super_admin" &&<div className="grid gap-2">
                   <Label>Company</Label>
                   <Select
                     value={formData.companyId}
@@ -231,7 +234,7 @@ const handleSubmit = async () => {
                         ))}
                     </SelectContent>
                   </Select>
-                </div>
+                </div>}
 
                 {/* Vehicle Select */}
                 <div className="grid gap-2">

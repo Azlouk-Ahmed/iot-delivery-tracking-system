@@ -56,6 +56,41 @@ const getCompanyAdmins = async (req, res) => {
   }
 };
 
+const getAllDeliveriesByCompany = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const companies = await Company.find({ admins: userId }).select("_id");
+
+    if (!companies.length) {
+      return res.status(200).json({
+        success: true,
+        count: 0,
+        deliveries: [],
+      });
+    }
+
+    const companyIds = companies.map((c) => c._id);
+
+    const deliveries = await Delivery.find({ company: { $in: companyIds } })
+      .populate("user", "name email")
+      .populate("company", "name")
+      .populate("vehicleId", "plateNumber");
+
+    res.status(200).json({
+      success: true,
+      count: deliveries.length,
+      deliveries,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+
 const addAdminToCompany = async (req, res) => {
   try {
     const { companyId, adminId } = req.body;
@@ -121,4 +156,5 @@ module.exports = {
   addAdminToCompany,
   removeAdminFromCompany,
   getAll,
+  getAllDeliveriesByCompany
 };

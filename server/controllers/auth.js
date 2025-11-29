@@ -5,6 +5,7 @@ const {
   verifyRefreshToken,
 } = require("../utils/jwt-utils");
 const User = require("../models/user");
+const Company = require("../models/company");
 require("dotenv").config();
 
 const CLIENT_URL = process.env.CLIENT_URL;
@@ -77,6 +78,57 @@ const signup = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Registration failed",
+      error: error.message,
+    });
+  }
+};
+
+const createStaff = async (req, res) => {
+  try {
+    const { name, email, password, role } = req.body;
+
+    // 1. Validate request
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Name, email, and password are required",
+      });
+    }
+
+    const existing = await User.findOne({ email });
+    if (existing) {
+      return res.status(409).json({
+        success: false,
+        message: "Email already exists",
+      });
+    }
+
+    const newUser = await User.create({
+      name,
+      email,
+      password,
+      role: role,
+    });
+
+    // 6. Remove sensitive data
+    const userResponse = {
+      _id: newUser._id,
+      name: newUser.name,
+      email: newUser.email,
+      role: newUser.role,
+      createdAt: newUser.createdAt,
+    };
+
+    return res.status(201).json({
+      success: true,
+      message: "Super admin created successfully",
+      user: userResponse,
+    });
+  } catch (error) {
+    console.error("Create super admin error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to create super admin",
       error: error.message,
     });
   }
@@ -161,6 +213,39 @@ const getAll = async (req, res) => {
 const getAdmins = async (req, res) => {
   try {
     const users = await User.find({role : "admin"}).select("-password -refreshTokens -resetPasswordToken -resetPasswordExpires");
+    console.log("Fetched admins:", users);
+    res.status(200).json({
+      success: true,
+      users,
+    });
+  } catch (error) {
+    console.error("Get all users error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch users",
+      error: error.message,
+    });
+  }
+}
+const getDrivers = async (req, res) => {
+  try {
+    const users = await User.find({role : "driver"}).select("-password -refreshTokens -resetPasswordToken -resetPasswordExpires");
+    res.status(200).json({
+      success: true,
+      users,
+    });
+  } catch (error) {
+    console.error("Get all users error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch users",
+      error: error.message,
+    });
+  }
+}
+const getSupAdmins = async (req, res) => {
+  try {
+    const users = await User.find({role : "super_admin"}).select("-password -refreshTokens -resetPasswordToken -resetPasswordExpires");
     console.log("Fetched admins:", users);
     res.status(200).json({
       success: true,
@@ -488,6 +573,29 @@ const getUserRegistrationStats = async (req, res) => {
   }
 };
 
+const getAdminData = async (req, res) => {
+  try {
+    const user = req.user;
+
+    const companies = await Company.findOne({ admins: user._id })
+
+    res.status(200).json({
+      success: true,
+      message: "Admin data fetched successfully",
+      user: user.getPublicProfile(),
+      companies,
+    });
+  } catch (error) {
+    console.error("Get admin data error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch admin data",
+      error: error.message,
+    });
+  }
+};
+
+
 module.exports = {
   signup,
   login,
@@ -501,5 +609,9 @@ module.exports = {
   resetPassword,
   getAll,
   getAdmins,
-  getUserRegistrationStats
+  getUserRegistrationStats,
+  getSupAdmins,
+  createStaff,
+  getDrivers,
+  getAdminData
 };

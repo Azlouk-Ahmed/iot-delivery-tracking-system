@@ -83,7 +83,7 @@ exports.getAll = async (req, res) => {
   try {
 
     const vehicles = await Vehicle.find()
-      .populate('companyId')
+      .populate('companyId').populate("driverId", "name email photo")
       .sort({ createdAt: -1 });
 
     res.status(200).json({

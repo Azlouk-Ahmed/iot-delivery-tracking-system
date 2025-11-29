@@ -142,6 +142,22 @@ const Router = () => {
                     ),
                   },
                   {
+                    path: "vehicles/all",
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <VehicleManagement />
+                      </React.Suspense>
+                    ),
+                  },
+                  {
+                    path: "vehicles/available",
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <AvailableVehicles />
+                      </React.Suspense>
+                    ),
+                  },
+                  {
                     path: "deliveries/all",
                     element: (
                       <React.Suspense fallback={<div>Loading...</div>}>
@@ -245,7 +261,7 @@ const Router = () => {
                     path: "personnel/drivers",
                     element: (
                       <React.Suspense fallback={<div>Loading...</div>}>
-                        <DriverManagement />
+                        <DriversManagement />
                       </React.Suspense>
                     ),
                   },
@@ -261,7 +277,7 @@ const Router = () => {
                     path: "personnel/admins",
                     element: (
                       <React.Suspense fallback={<div>Loading...</div>}>
-                        <AdminManagement />
+                        <AdminsManagement />
                       </React.Suspense>
                     ),
                   },
@@ -270,7 +286,7 @@ const Router = () => {
                     path: "deliveries/add",
                     element: (
                       <React.Suspense fallback={<div>Loading...</div>}>
-                        <AddDelivery />
+                        <Delivery />
                       </React.Suspense>
                     ),
                   },
@@ -278,7 +294,7 @@ const Router = () => {
                     path: "deliveries/all",
                     element: (
                       <React.Suspense fallback={<div>Loading...</div>}>
-                        <AllDeliveries />
+                        <Delivery />
                       </React.Suspense>
                     ),
                   },
