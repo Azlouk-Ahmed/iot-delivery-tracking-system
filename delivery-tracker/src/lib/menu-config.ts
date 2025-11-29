@@ -48,6 +48,15 @@ export const menuConfig: MenuConfig = {
             { title: "Chauffeurs", url: "/personnel/chauffeurs", icon: Truck },
           ],
         },
+        {
+          title: "Vehicles",
+          url: "/vehicles",
+          icon: Truck,
+          subItems: [
+            { title: "All Vehicles", url: "/vehicles/all", icon: List },
+            { title: "Active", url: "/vehicles/available", icon: Car },
+          ],
+        },
       ],
     },
     {
@@ -82,11 +91,14 @@ export const menuConfig: MenuConfig = {
         },
       ],
     },
+
+    
     {
       label: "Analyse & Paramètres",
       items: [
         { title: "Paramètres système", url: "/settings", icon: Settings },
       ],
+      
     },
   ],
   admin: [
@@ -101,7 +113,6 @@ export const menuConfig: MenuConfig = {
           subItems: [
             { title: "Admins", url: "/personnel/admins", icon: ShieldCheck },
             { title: "Drivers", url: "/personnel/drivers", icon: Truck },
-            { title: "Clients", url: "/personnel/clients", icon: Users },
           ],
         },
         {

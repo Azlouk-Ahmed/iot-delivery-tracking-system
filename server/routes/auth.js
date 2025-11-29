@@ -21,6 +21,9 @@ router.post("/login", validateLogin, authController.login);
 router.get("/stats", authController.getUserRegistrationStats);
 router.get("/all", authController.getAll);
 router.get("/admins", authController.getAdmins);
+router.get("/drivers", authController.getDrivers);
+router.get("/sup-admins", authController.getSupAdmins);
+router.post("/staff", authController.createStaff);
 
 router.get(
   "/google",
@@ -40,6 +43,7 @@ router.get(
 );
 
 router.get("/refresh", authController.refreshAccessToken);
+router.get("/admin-data",authenticateToken,authorizeRoles([ALLOWED_ROLES.ADMIN]), authController.getAdminData);
 
 router.get("/redirect", authenticateToken, authController.redirect);
 

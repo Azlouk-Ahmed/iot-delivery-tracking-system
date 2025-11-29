@@ -61,11 +61,10 @@ export interface UseFetchReturn<T> {
 export interface Member {
   _id: number;
   name: string;
-  avatar?: string;
-  joinedDate: string;
-  phone: string;
+  photo?: string;
+  role?: string;
+  createdAt: string;
   email: string;
-  suspended: boolean;
 }
 
 export interface Point {
@@ -114,3 +113,4 @@ export interface TrajectoryMapProps {
 export interface MapBoundsProps {
   points: Point[];
 }
+
