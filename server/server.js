@@ -17,6 +17,7 @@ const ALLOWED_ROLES = require("./config/roles-list");
 const User = require("./models/user");
 const Vehicle = require("./models/vehicle");
 const Company = require("./models/company");
+const Delivery = require("./models/delivery"); // ← ADD THIS
 
 require("dotenv").config();
 require("./config/google-auth-config");
@@ -36,18 +37,18 @@ app.set("io", io);
 
 // ---------------- Socket.IO Logic ----------------
 io.on("connection", async (socket) => {
-  const { name, role, userId } = socket.handshake.auth;
+  const { name, role, userId, email } = socket.handshake.auth; // ← ADD email
   logger.info("Socket", `User connected: ${name} (${role})`);
 
-  socket.userData = { name, role, userId };
+  socket.userData = { name, role, userId, email }; // ← ADD email
 
+  // ---------------- ADMIN ROLE ----------------
   if (role === ALLOWED_ROLES.ADMIN) {
     try {
       logger.info("Socket", `Fetching company for admin ${userId}`);
       const company = await Company.findOne({ admins: userId.toString() });
       logger.info("debug", `debugging ====== ${company} - for admin ${userId}`);
       logger.info("debug", `typeof userId = ${typeof userId}, value = [${userId}]`);
-
 
       if (!company) {
         logger.warn("Socket", `Admin ${name} is not linked to any company`);
@@ -63,7 +64,44 @@ io.on("connection", async (socket) => {
       socket.disconnect(true);
       return;
     }
-  } else {
+  }
+  // ---------------- USER ROLE ----------------
+  else if (role === ALLOWED_ROLES.USER) {
+    try {
+      if (!email) {
+        logger.warn("Socket", `User ${name} connected without email`);
+        socket.emit("unauthorized", { message: "Email is required for user role" });
+        socket.disconnect(true);
+        return;
+      }
+
+      // Fetch all in-progress deliveries for this user's email
+      const activeDeliveries = await Delivery.find({
+        email: email.toLowerCase(),
+        status: "in-progress",
+      }).populate("vehicleId", "vehicleId");
+
+      if (activeDeliveries.length === 0) {
+        logger.info("Socket", `User ${name} (${email}) has no active deliveries`);
+        socket.userData.allowedVehicles = [];
+      } else {
+        // Store the vehicleIds (string format) that this user can track
+        socket.userData.allowedVehicles = activeDeliveries.map(
+          (delivery) => delivery.vehicleId.vehicleId
+        );
+        logger.success(
+          "Socket",
+          `User ${name} (${email}) tracking ${socket.userData.allowedVehicles.length} vehicle(s): ${socket.userData.allowedVehicles.join(", ")}`
+        );
+      }
+    } catch (error) {
+      logger.error("Socket", `Error fetching user deliveries: ${error.message}`);
+      socket.disconnect(true);
+      return;
+    }
+  }
+  // ---------------- SUPER ADMIN ROLE ----------------
+  else {
     logger.success("Socket", `Super Admin ${name} connected with full access`);
   }
 
@@ -80,7 +118,7 @@ io.on("connection", async (socket) => {
         return;
       }
 
-      // Super Admin
+      // Super Admin - full access
       if (socket.userData.role === ALLOWED_ROLES.SUPER_ADMIN) {
         socket.join(`vehicle-${vehicleId}`);
         logger.info("Socket", `Super Admin joined room: vehicle-${vehicleId}`);
@@ -88,7 +126,7 @@ io.on("connection", async (socket) => {
         return;
       }
 
-      // Admin
+      // Admin - company-based access
       if (socket.userData.role === ALLOWED_ROLES.ADMIN) {
         if (vehicle.companyId._id.toString() === socket.userData.companyId) {
           socket.join(`vehicle-${vehicleId}`);
@@ -97,6 +135,22 @@ io.on("connection", async (socket) => {
         } else {
           logger.warn("Socket", `Admin denied access to vehicle-${vehicleId} (different company)`);
           socket.emit("error", { message: "Access denied: Vehicle belongs to another company" });
+        }
+        return;
+      }
+
+      // User - delivery-based access
+      if (socket.userData.role === ALLOWED_ROLES.USER) {
+        if (socket.userData.allowedVehicles && socket.userData.allowedVehicles.includes(vehicleId)) {
+          socket.join(`vehicle-${vehicleId}`);
+          logger.info("Socket", `User ${socket.userData.name} joined room: vehicle-${vehicleId}`);
+          socket.emit("joined-vehicle", { vehicleId, success: true });
+        } else {
+          logger.warn(
+            "Socket",
+            `User ${socket.userData.name} denied access to vehicle-${vehicleId} (no active delivery)`
+          );
+          socket.emit("error", { message: "Access denied: No active delivery for this vehicle" });
         }
       }
     } catch (error) {
@@ -108,6 +162,35 @@ io.on("connection", async (socket) => {
   socket.on("leave-vehicle", (vehicleId) => {
     socket.leave(`vehicle-${vehicleId}`);
     logger.info("Socket", `Client ${socket.id} left room: vehicle-${vehicleId}`);
+  });
+
+  // ---------------- NEW: Refresh User Deliveries ----------------
+  socket.on("refresh-deliveries", async () => {
+    if (socket.userData.role !== ALLOWED_ROLES.USER) {
+      return;
+    }
+
+    try {
+      const activeDeliveries = await Delivery.find({
+        email: socket.userData.email.toLowerCase(),
+        status: "in-progress",
+      }).populate("vehicleId", "vehicleId");
+
+      socket.userData.allowedVehicles = activeDeliveries.map(
+        (delivery) => delivery.vehicleId.vehicleId
+      );
+
+      logger.info(
+        "Socket",
+        `User ${socket.userData.name} refreshed deliveries: ${socket.userData.allowedVehicles.length} active`
+      );
+
+      socket.emit("deliveries-refreshed", {
+        activeDeliveries: socket.userData.allowedVehicles,
+      });
+    } catch (error) {
+      logger.error("Socket", `Error refreshing deliveries: ${error.message}`);
+    }
   });
 });
 

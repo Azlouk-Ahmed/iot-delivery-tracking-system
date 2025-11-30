@@ -6,12 +6,12 @@ const trajectoryController = require('../controllers/trajectory');
 router.post('/', trajectoryController.createTrajectory);
 
 
-router.get('/', trajectoryController.getAllTrajectories);
+router.get('/data/:page/:limit', trajectoryController.getAllSessionsTrajectories);
 router.get('/vehicle/:vehicleId', trajectoryController.getVehicleTrajectory);
 
 
 router.put('/:id', trajectoryController.updateTrajectory);
-router.get('/trajectories', trajectoryController.getAllSessionsTrajectories);
+ 
 
 
 router.delete('/:id', trajectoryController.deleteTrajectory);

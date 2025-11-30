@@ -40,6 +40,7 @@ exports.createTrajectory = async (req, res) => {
 
 exports.getAllTrajectories = async (req, res) => {
   try {
+    console.log("Query Params:", req.query);
     const { vehicleId, sessionId, startDate, endDate } = req.query;
     let filter = {};
 
@@ -70,6 +71,11 @@ exports.getAllTrajectories = async (req, res) => {
 
 exports.getAllSessionsTrajectories = async (req, res) => {
   try {
+    console.log("Params:", req.params);
+    const page = parseInt(req.params.page) || 1;
+    const limit = parseInt(req.params.limit) || 6;
+    const skip = (page - 1) * limit;
+
     // Group trajectories from ALL vehicles by sessionId
     const sessions = await Trajectory.aggregate([
       { $sort: { timestamp: 1 } },
@@ -98,13 +104,21 @@ exports.getAllSessionsTrajectories = async (req, res) => {
       }
     ]);
 
+    // Get total count before pagination
+    const totalCount = sessions.length;
+    const totalPages = Math.ceil(totalCount / limit);
+
+    // Apply pagination
+    const paginatedSessions = sessions.slice(skip, skip + limit);
+
     // Get all distinct vehicleIds for population
-    const vehicleIds = [...new Set(sessions.map(s => s.vehicleId))];
+    const vehicleIds = [...new Set(paginatedSessions.map(s => s.vehicleId))];
     const vehicles = await Vehicle.find({ vehicleId: { $in: vehicleIds } })
-      .populate('driverId', 'name email photo').populate('companyId', 'name');
+      .populate('driverId', 'name email photo')
+      .populate('companyId', 'name');
 
     // Attach vehicle info to each session
-    const enrichedSessions = sessions.map(session => {
+    const enrichedSessions = paginatedSessions.map(session => {
       const vehicle = vehicles.find(v => v.vehicleId === session.vehicleId);
       return {
         vehicle,
@@ -115,7 +129,10 @@ exports.getAllSessionsTrajectories = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      count: enrichedSessions.length,
+      count: totalCount,
+      totalPages: totalPages,
+      currentPage: page,
+      limit: limit,
       sessions: enrichedSessions
     });
 

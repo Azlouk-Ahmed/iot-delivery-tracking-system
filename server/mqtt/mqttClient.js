@@ -11,7 +11,6 @@ module.exports = (io) => {
   const activeVehicles = new Map();
   const HEARTBEAT_TIMEOUT = 30000;
   const heartbeatTimeouts = new Map();
-  
 
   const brokerUrl = brokerConfig.host;
   const options = {
@@ -28,13 +27,23 @@ module.exports = (io) => {
       const userData = socket.userData;
       if (!userData) return;
 
+      // Super Admin - sees everything
       if (userData.role === ALLOWED_ROLES.SUPER_ADMIN) {
         socket.emit(eventName, data);
         return;
       }
 
+      // Admin - sees vehicles from their company
       if (userData.role === ALLOWED_ROLES.ADMIN && companyId) {
         if (userData.companyId === companyId.toString()) {
+          socket.emit(eventName, data);
+        }
+        return;
+      }
+
+      // User - sees only vehicles with their active deliveries
+      if (userData.role === ALLOWED_ROLES.USER) {
+        if (userData.allowedVehicles && userData.allowedVehicles.includes(data.vehicleId)) {
           socket.emit(eventName, data);
         }
       }
