@@ -4,10 +4,8 @@ import RequireAuth from "@/components/base/RequireAuth";
 import { useAuthContext } from "@/hooks/useAuthContext";
 import type { Role } from "@/types/types";
 
-const Home = React.lazy(() => import("../pages/Home"));
-const AdminHome = React.lazy(() => import("../pages/AdminHome"));
+const LiveMapMinotoring = React.lazy(() => import("../pages/shared/LiveMapMinotoring"));
 const DriverHome = React.lazy(() => import("../pages/DriverHome"));
-const UserHome = React.lazy(() => import("../pages/UserHome"));
 const Login = React.lazy(() => import("../pages/Login"));
 const Signup = React.lazy(() => import("../pages/SignUp"));
 const AuthCallback = React.lazy(() => import("../pages/AuthCallback"));
@@ -61,29 +59,15 @@ const DriverAlerts = React.lazy(
 );
 
 const AdminDashboard = React.lazy(() => import("@/pages/admin/AdminDashboard"));
-const AddDelivery = React.lazy(
-  () => import("@/pages/admin/delivery/AddDelivery")
-);
-const AllDeliveries = React.lazy(
-  () => import("@/pages/admin/delivery/AllDeliveries")
-);
-const DriverManagement = React.lazy(
-  () => import("@/pages/admin/personalManagement/DriverManagement")
-);
+
 const ClientManagement = React.lazy(
   () => import("@/pages/admin/personalManagement/ClientManagement")
-);
-const InProgressDeliveries = React.lazy(
-  () => import("@/pages/admin/delivery/InProgressDeliveries")
 );
 const DeliveredDeliveries = React.lazy(
   () => import("@/pages/admin/delivery/DeliveredDeliveries")
 );
 const PlannedDeliveries = React.lazy(
   () => import("@/pages/admin/delivery/PlannedDeliveries")
-);
-const AdminManagement = React.lazy(
-  () => import("@/pages/admin/personalManagement/AdminManagement")
 );
 const InServiceDrivers = React.lazy(
   () => import("@/pages/admin/driver/InServiceDrivers")
@@ -225,7 +209,7 @@ const Router = () => {
                     path: "tracking/all-cars",
                     element: (
                       <React.Suspense fallback={<div>Loading...</div>}>
-                        <Home />
+                        <LiveMapMinotoring />
                       </React.Suspense>
                     ),
                   },
@@ -363,6 +347,14 @@ const Router = () => {
                       </React.Suspense>
                     ),
                   },
+                  {
+                    path: "live",
+                    element: (
+                      <React.Suspense fallback={<div>Loading...</div>}>
+                        <LiveMapMinotoring />
+                      </React.Suspense>
+                    ),
+                  },
                 ]
               : role === "user"
               ? [
@@ -410,7 +402,7 @@ const Router = () => {
                     path: "tracking",
                     element: (
                       <React.Suspense fallback={<div>Loading...</div>}>
-                        <RealTimeTracking />
+                        <LiveMapMinotoring />
                       </React.Suspense>
                     ),
                   },
@@ -421,7 +413,7 @@ const Router = () => {
                     path: "/",
                     element: (
                       <React.Suspense fallback={<div>Loading...</div>}>
-                        <DriverHome />
+                        <Trajectories />
                       </React.Suspense>
                     ),
                   },
@@ -453,7 +445,7 @@ const Router = () => {
                     path: "trips/history",
                     element: (
                       <React.Suspense fallback={<div>Loading...</div>}>
-                        <TripsHistorique />
+                        <Trajectories />
                       </React.Suspense>
                     ),
                   },

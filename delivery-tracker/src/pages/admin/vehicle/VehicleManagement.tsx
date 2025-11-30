@@ -43,10 +43,10 @@ interface Vehicle {
 
 export default function VehicleManagement() {
   const { user } = useAuthContext();
-  const { data: vehiclesData, loading, refetch } = useFetch<{ success: boolean; data: Vehicle[] }>("/vehicle/all", { immediate: true, useAuth: false });
   const { data: driversData } = useFetch("/auth/drivers", { immediate: true });
   const { data: companiesData } = useFetch("/companies/all", { immediate: true });
-const { data: userData } = useFetch("/auth/admin-data", { immediate: true });  console.log("User Data:", userData);
+  const { data: userData } = useFetch("/auth/admin-data", { immediate: true });  console.log("User Data:", userData);
+  const { data: vehiclesData, loading, refetch } = useFetch<{ success: boolean; data: Vehicle[] }>(user?.role === "super_admin"?"/vehicle/all" : `/vehicle/admin/${userData?.companies?._id}`, { immediate: true, useAuth: false });
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({
     model: "",
@@ -60,7 +60,7 @@ const { data: userData } = useFetch("/auth/admin-data", { immediate: true });  c
       }
     }, [userData]);
 
-  const vehicles = vehiclesData?.data || [];
+  const vehicles = vehiclesData?.data  || [];
   const drivers = driversData?.users || [];
   const companies = companiesData || [];
 
@@ -112,7 +112,7 @@ const { data: userData } = useFetch("/auth/admin-data", { immediate: true });  c
               <Truck className="w-6 h-6" /> Vehicle Management
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Manage fleet vehicles and assignments ({vehicles.length} total)
+              Manage fleet vehicles and assignments ({vehicles?.length} total)
             </p>
           </div>
           <Button onClick={handleCreate}>
@@ -121,7 +121,7 @@ const { data: userData } = useFetch("/auth/admin-data", { immediate: true });  c
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-          {vehicles.length === 0 ? (
+          {vehicles?.length === 0 ? (
             <Card className="col-span-full">
               <CardContent className="py-12 text-center">
                 <Truck className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
@@ -129,7 +129,7 @@ const { data: userData } = useFetch("/auth/admin-data", { immediate: true });  c
               </CardContent>
             </Card>
           ) : (
-            vehicles.map((vehicle) => {
+            vehicles?.map((vehicle) => {
               const driver = vehicle.driverId;
               return (
                 <Card key={vehicle._id} className="overflow-hidden hover:shadow-lg transition-shadow">

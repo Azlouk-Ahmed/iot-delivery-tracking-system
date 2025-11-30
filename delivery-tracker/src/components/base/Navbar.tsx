@@ -80,7 +80,7 @@ function Navbar() {
                             <SidebarMenuButton className="cursor-pointer">
                               <item.icon />
                               <span className="font-bold text-sm">
-                                {item.title === "Suivi en temps réel" ? (
+                                {item.title === "Suivi en temps réel" || item.title === "Vehicles" || item.title === "Live Tracking" ? (
                                   <>
                                     {item.title}
                                     <span className="bg-primary px-1 rounded inline-block ml-2 text-[10px] text-white">

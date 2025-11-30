@@ -1,85 +1,60 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Clock, PackageOpen, Truck, User, Phone } from "lucide-react";
+import { Clock, PackageOpen } from "lucide-react";
 import { useAuthContext } from "@/hooks/useAuthContext";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import useFetch from "@/hooks/useFetchData";
 
 export default function ClientDashboard() {
   const { user } = useAuthContext();
   const navigate = useNavigate();
 
-  // Example orders (replace later with data from your backend)
-  const orders = [
-    { id: "CMD-4521", status: "In delivery", delivered: false },
-    { id: "CMD-4510", status: "Delivered yesterday", delivered: false },
-    { id: "CMD-4502", status: "Delivered 2 days ago", delivered: true },
-    { id: "CMD-4490", status: "Delivered 4 days ago", delivered: true },
-    { id: "CMD-4485", status: "Delivered last week", delivered: true },
-    { id: "CMD-4479", status: "Delivered last week", delivered: true },
-  ];
+  const { data } = useFetch("/delivery/all", { immediate: true });
+
+  const deliveries = data?.deliveries || [];
+
+  // Convert to UI order format
+  const orders = deliveries.map((d: any) => ({
+    id: d._id,
+    status: d.status,
+    delivered: d.status === "delivered",  // You can adjust this based on your API
+    createdAt: d.createdAt
+  }));
 
   return (
     <div className="flex flex-col gap-6 p-6">
+      <div className="p-4 bg-primary/30 rounded-2xl">
+        <div className="flex gap-4 items-center">
+          <Avatar className="w-28 h-28">
+            <AvatarImage src={user?.photo} />
+            <AvatarFallback>{user?.name?.slice(0, 2)}</AvatarFallback>
+          </Avatar>
 
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-         <h1 className="text-3xl font-bold text-yellow-500">
-            Welcome, {user?.name || "Client"}
-          </h1>
-          <p className="text-sm text-gray-500">Track your orders and deliveries in real time</p>
+          <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+            <span className="text-2xl font-bold">
+              Welcome Back, <span className="text-primary">{user?.name}</span>
+            </span>
+            <span className="text-xs text-muted-foreground truncate">
+              {user?.email}
+            </span>
+          </div>
         </div>
-        <Button className="bg-yellow-400 text-gray-900 hover:bg-yellow-500">
-          Refresh
-        </Button>
       </div>
 
-      {/* Ongoing Delivery */}
-      <Card className="border-yellow-300">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Truck className="h-5 w-5" /> Ongoing Delivery
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-          <div className="flex items-center gap-2 p-3">
-            <User className="text-blue-500" />
-            <div>
-              <p className="text-sm text-gray-500">Driver</p>
-              <p className="font-semibold">Ahmed Ben Ali</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 p-3">
-            <Phone className="text-green-500" />
-            <div>
-              <p className="text-sm text-gray-500">Phone</p>
-              <p className="font-semibold">+216 98 765 432</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 p-3">
-            <Truck className="text-orange-500" />
-            <div>
-              <p className="text-sm text-gray-500">Vehicle</p>
-              <p className="font-semibold">Truck 12</p>
-            </div>
-          </div>
-
-        </CardContent>
-      </Card>
-
-      {/* Order History */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Clock className="h-5 w-5" /> Order History
           </CardTitle>
         </CardHeader>
-        <CardContent>
 
+        <CardContent>
           <div className="space-y-4">
+            {orders.length === 0 && (
+              <p className="text-sm text-muted-foreground">No deliveries found.</p>
+            )}
+
             {orders.slice(-5).map((order) => (
               <div
                 key={order.id}
@@ -88,22 +63,37 @@ export default function ClientDashboard() {
                 }`}
               >
                 <div className="flex items-center gap-4">
-                  <PackageOpen className={order.delivered ? "text-gray-500" : "text-yellow-600"} />
+                  <PackageOpen
+                    className={
+                      order.delivered ? "text-gray-500" : "text-yellow-600"
+                    }
+                  />
                   <div>
-                    <p className="font-medium">{order.id}</p>
-                    <p className="text-sm text-gray-500">{order.status}</p>
+                    <p className="font-medium">#{order.id}</p>
+                    <p className="text-sm text-gray-500">
+                      Status: {order.status}
+                    </p>
                   </div>
                 </div>
 
                 {order.delivered ? (
-                  <Button size="sm" variant="outline" onClick={()=>{navigate('/orders/history')}}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      navigate("/orders/history");
+                    }}
+                  >
                     View details
                   </Button>
                 ) : (
                   <Button
                     onClick={() => {
                       const el = document.getElementById("map-section");
-                      el?.scrollIntoView({ behavior: "smooth", block: "start" });
+                      el?.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start",
+                      });
                     }}
                     className="bg-yellow-500 hover:bg-yellow-600"
                   >
@@ -113,19 +103,8 @@ export default function ClientDashboard() {
               </div>
             ))}
           </div>
-
         </CardContent>
       </Card>
-
-      {/* Map */}
-      <div id="map-section" className="mt-8">
-        <Card className="h-72 flex items-center justify-center border-dashed border-2 text-gray-500">
-          <p>🗺️ Real-time tracking map</p>
-        </Card>
-      </div>
-
     </div>
   );
 }
-
-

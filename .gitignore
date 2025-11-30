@@ -28,3 +28,22 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Build results
+bin/
+obj/
+
+# Visual Studio files
+.vs/
+*.user
+*.suo
+
+# Logs
+*.log
+
+# NuGet
+packages/
+
+# OS files
+.DS_Store
+Thumbs.db

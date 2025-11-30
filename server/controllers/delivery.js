@@ -1,5 +1,6 @@
 const { default: mongoose } = require("mongoose");
 const Delivery = require("../models/delivery");
+const Vehicle = require("../models/vehicle");
 
  const createDelivery = async (req, res) => {
   try {
@@ -68,6 +69,20 @@ const Delivery = require("../models/delivery");
   try {
     console.log("User ID:", req.user._id);
     const deliveries = await Delivery.find({user:req.user._id})
+      .populate("user", "name email")
+      .populate("company", "name")
+      .populate("vehicleId", "plateNumber")
+      .populate("products.product", "name price");
+
+    res.status(200).json({ success: true, count: deliveries.length, deliveries });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+ const getDriverDeliveries = async (req, res) => {
+  try {
+    const vehicle = await Vehicle.findOne({ driverId: req.user._id });
+    const deliveries = await Delivery.find({vehicleId:vehicle._id})
       .populate("user", "name email")
       .populate("company", "name")
       .populate("vehicleId", "plateNumber")
@@ -345,5 +360,6 @@ module.exports = {
     updateDeliveryStatus,
     getDeliveryStats,
     getAllDeliveriesCompany,
-    getuserDeliveries
+    getuserDeliveries,
+    getDriverDeliveries
 };

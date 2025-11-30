@@ -77,11 +77,7 @@ export const menuConfig: MenuConfig = {
           icon: MapPin,
           subItems: [
             { title: "All Cars", url: "/tracking/all-cars", icon: Car },
-            {
-              title: "Specific Cars",
-              url: "/tracking/specific-cars",
-              icon: MapPin,
-            },
+ 
           ],
         },
         {
@@ -131,8 +127,7 @@ export const menuConfig: MenuConfig = {
           icon: Truck,
           subItems: [
             { title: "All Vehicles", url: "/vehicles/all", icon: List },
-            { title: "Available", url: "/vehicles/available", icon: Car },
-            { title: "In Service", url: "/vehicles/in-service", icon: Truck },
+            { title: "Active now", url: "/vehicles/available", icon: Car },
           ],
         },
       ],
@@ -140,7 +135,7 @@ export const menuConfig: MenuConfig = {
     {
       label: "Tracking & Alerts",
       items: [
-        { title: "Real-Time Map", url: "/tracking", icon: MapPin },
+        { title: "Real-Time Map", url: "/live", icon: MapPin },
         { title: "Alerts", url: "/alerts", icon: Bell },
       ],
     },
@@ -162,22 +157,12 @@ export const menuConfig: MenuConfig = {
           url: "/trips",
           icon: Truck,
           subItems: [
-            { title: "Trajet en cours", url: "/trips/current", icon: Truck },
-            {
-              title: "Trajets planifiés",
-              url: "/trips/upcoming",
-              icon: Calendar,
-            },
             { title: "Historique", url: "/trips/history", icon: List },
           ],
         },
         { title: "Marquer livraison", url: "/deliver", icon: ClipboardCheck },
         { title: "Alertes", url: "/alerts", icon: Bell },
       ],
-    },
-    {
-      label: "Compte",
-      items: [{ title: "Paramètres", url: "/settings", icon: Settings }],
     },
     {
       label: "Analyse & Paramètres",
@@ -196,9 +181,7 @@ export const menuConfig: MenuConfig = {
           url: "/orders",
           icon: Package,
           subItems: [
-            { title: "Ongoing", url: "/orders/ongoing", icon: Truck },
-            { title: "Delivered", url: "/orders/completed", icon: CheckCircle },
-            { title: "History", url: "/orders/history", icon: List },
+            { title: "All", url: "/orders/ongoing", icon: Truck },
           ],
         },
         { title: "Live Tracking", url: "/tracking", icon: MapPin },

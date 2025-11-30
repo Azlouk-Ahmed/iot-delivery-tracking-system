@@ -89,6 +89,7 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
         autoConnect: true,
         auth: {
           name: `${user.name}`,
+          email: `${user.email}`,
           role: `${user.role}`,
           userId: `${user._id}`,
         },
@@ -154,6 +155,7 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
             longitude: data.longitude,
             timestamp: data.timestamp,
           });
+          //toast.info(`${data.driverName} turned ON vehicle ${data.model}`);
         }
         return updated;
       });
